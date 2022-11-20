@@ -2,6 +2,8 @@
 .idea
 .dockerignore
 .gitignore
+up.sh
+down.sh
 target
 HELP.md
 README.md
