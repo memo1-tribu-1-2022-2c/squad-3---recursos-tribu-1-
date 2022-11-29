@@ -12,7 +12,7 @@ public class HourDetailService {
     private HourDetailRepository hourDetailRepository;
 
     public HourDetail createHourDetail(HourDetail hourDetail) {
-        hourDetail.setId(-1L);
+        // hourDetail.setId(-1L);
         return hourDetailRepository.save(hourDetail);
     }
 
