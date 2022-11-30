@@ -28,6 +28,8 @@ public class HourDetail {
     
     private HourDetailStatus status;
 
+    private HourDetailType type;
+    
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "hd_id")
     private List<TimeRegister> timeRegisters;

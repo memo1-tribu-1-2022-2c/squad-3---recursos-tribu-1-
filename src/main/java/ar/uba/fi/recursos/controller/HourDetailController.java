@@ -33,7 +33,7 @@ public class HourDetailController {
     }
 
     @PostMapping(path = "")
-    public HourDetail createHourDetail(@RequestBody HourDetail hourDetail) {
+    public HourDetail createHourDetail(@RequestBody HourDetail hourDetail) throws Throwable{
         return hourDetailService.createHourDetail(hourDetail);
     }
 
