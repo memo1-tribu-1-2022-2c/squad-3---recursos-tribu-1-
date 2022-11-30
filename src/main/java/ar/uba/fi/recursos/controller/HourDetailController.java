@@ -71,8 +71,8 @@ public class HourDetailController {
 }
 
 // {
-//     "startTime":"2017-01-19T15:26+05:30", 
-//     "endTime":"2018-01-19T15:26+05:30",
+//     "startTime":"2017-01-19", 
+//     "endTime":"2018-01-19",
 //     "status":"BORRADOR",
 //     "hours": "24"
 // }

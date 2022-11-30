@@ -2,7 +2,7 @@ package ar.uba.fi.recursos.model;
 
 import lombok.*;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import javax.persistence.*;
 
@@ -24,9 +24,9 @@ public class Task {
 
     private String status; //
     
-    private ZonedDateTime startTime; //
+    private LocalDate startTime; //
 
-    private ZonedDateTime endTime; //
+    private LocalDate endTime; //
 
     private Double estimatedHours;
 

@@ -3,7 +3,7 @@ package ar.uba.fi.recursos.model;
 import lombok.*;
 
 import javax.persistence.*;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -20,19 +20,19 @@ public class HourDetail {
     @Column(name = "id")
     private Long id;
     
-    private ZonedDateTime startTime;
+    private LocalDate startTime;
     
-    private ZonedDateTime endTime;
+    private LocalDate endTime;
     
     private Double hours;
     
     private HourDetailStatus status;
 
-    @OneToMany(mappedBy = "hd", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "hd_id")
     private List<TimeRegister> timeRegisters;
 
     public void addTimeRegister(TimeRegister timeRegister) {
-        timeRegister.setHd(this);
         timeRegisters.add(timeRegister);
     }
 }

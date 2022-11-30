@@ -3,9 +3,7 @@ package ar.uba.fi.recursos.model;
 import lombok.*;
 
 import javax.persistence.*;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -22,21 +20,22 @@ public class TimeRegister {
     @Column(name = "id")
     private Long id;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tbl_hd.id")
-    private HourDetail hd;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "hd_id")
+    // private HourDetail hd;
 
     private Long taskId;
     
     private Double hours;
-    
-    // private Collection<Date> dates;
 
+    @ElementCollection(targetClass=LocalDate.class)
+    @CollectionTable(name="tbl_tr_dates", joinColumns=@JoinColumn(name="tr_id"))
+    private List<LocalDate> dates;
 }
 
-/*
-{
-    "taskId":"1",
-    "hours":"2"
-}
- */
+
+// {
+//     "taskId":"1",
+//     "hours":"2",
+//     "dates": ["2020-01-01", "2020-01-02"]
+// }
