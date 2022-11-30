@@ -24,7 +24,9 @@ public class TimeRegister {
     // @JoinColumn(name = "hd_id")
     // private HourDetail hd;
 
-    private Long taskId;
+    private TimeRegisterTypeOfActivity typeOfActivity;
+
+    private Long activityId; // Id of the task or concept
     
     private Double hours;
 
@@ -35,7 +37,10 @@ public class TimeRegister {
 
 
 // {
-//     "taskId":"1",
-//     "hours":"2",
+//     "typeOfActivity":"TASK",
+//     "activityId":"121",
+//     "hours":"8",
 //     "dates": ["2020-01-01", "2020-01-02"]
 // }
+
+
