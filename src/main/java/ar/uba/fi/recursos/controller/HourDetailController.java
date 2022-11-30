@@ -1,6 +1,7 @@
 package ar.uba.fi.recursos.controller;
 
 import ar.uba.fi.recursos.model.HourDetail;
+import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.repository.HourDetailRepository;
 import ar.uba.fi.recursos.service.HourDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,5 +53,26 @@ public class HourDetailController {
         hourDetailService.save(hourDetail);
         return ResponseEntity.ok().build();
     }
+
+    // Put mapping to add a new TimeRegister to an existing HourDetail
+    @PutMapping(path = "/{id}/timeRegister")
+    public ResponseEntity<Object> addTimeRegister(@RequestBody TimeRegister timeRegister, @PathVariable Long id){
+        Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
+        	
+        if (!hourDetailOptional.isPresent()) {
+            System.out.println("HourDetail not found");
+            return ResponseEntity.notFound().build();
+        }
+        HourDetail hourDetail = hourDetailOptional.get();
+        hourDetail.addTimeRegister(timeRegister);
+        hourDetailService.save(hourDetail);
+        return ResponseEntity.ok().build();
+    }
 }
-//}
+
+// {
+//     "startTime":"2017-01-19T15:26+05:30", 
+//     "endTime":"2018-01-19T15:26+05:30",
+//     "status":"BORRADOR",
+//     "hours": "24"
+// }
