@@ -28,11 +28,15 @@ public class HourDetail {
     
     private HourDetailStatus status;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "hd_id")
     private List<TimeRegister> timeRegisters;
 
     public void addTimeRegister(TimeRegister timeRegister) {
         timeRegisters.add(timeRegister);
+    }
+
+    public void removeTimeRegister(Long timeRegisterId) {
+        timeRegisters.removeIf(timeRegister -> timeRegister.getId().equals(timeRegisterId));
     }
 }

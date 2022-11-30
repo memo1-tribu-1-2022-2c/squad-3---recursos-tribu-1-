@@ -12,6 +12,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @Validated
 @RestController
@@ -38,6 +39,31 @@ public class ConceptController {
     @GetMapping(path = "/{id}")
     public ResponseEntity<Concept> getConcept(@PathVariable Long id) {
         return ResponseEntity.of(conceptRepository.findById(id));
+    }
+
+    @PutMapping(path = "/{id}")
+    public ResponseEntity<Object> modifyConceptData(@RequestBody Concept concept, @PathVariable Long id){
+        Optional<Concept> conceptOptional = conceptRepository.findById(id);
+
+        if (!conceptOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        concept.setId(id);
+        conceptService.save(concept);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<Object> deleteConcept(@PathVariable Long id) {
+        Optional<Concept> conceptOptional = conceptRepository.findById(id);
+
+        if (!conceptOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        conceptService.delete(conceptOptional.get());
+        return ResponseEntity.ok().build();
     }
 }
 

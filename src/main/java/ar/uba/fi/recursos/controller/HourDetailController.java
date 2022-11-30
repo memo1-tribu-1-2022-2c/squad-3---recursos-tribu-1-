@@ -11,7 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.net.URI;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -58,7 +58,7 @@ public class HourDetailController {
     @PutMapping(path = "/{id}/timeRegister")
     public ResponseEntity<Object> addTimeRegister(@RequestBody TimeRegister timeRegister, @PathVariable Long id){
         Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
-        	
+        
         if (!hourDetailOptional.isPresent()) {
             System.out.println("HourDetail not found");
             return ResponseEntity.notFound().build();
@@ -68,11 +68,38 @@ public class HourDetailController {
         hourDetailService.save(hourDetail);
         return ResponseEntity.ok().build();
     }
-}
 
+    @DeleteMapping(path = "/{id}")
+    public void deleteHourDetail(@PathVariable Long id) {
+        hourDetailRepository.deleteById(id);
+    }
+
+    @DeleteMapping(path = "/{id}/timeRegister/{timeRegisterId}")
+    public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long id, @PathVariable Long timeRegisterId) {
+        Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
+        if (!hourDetailOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        HourDetail hourDetail = hourDetailOptional.get();
+        hourDetail.removeTimeRegister(timeRegisterId);
+        hourDetailService.save(hourDetail);
+        return ResponseEntity.ok().build();
+    }
+
+    
+}
+// hourDetail
 // {
 //     "startTime":"2017-01-19", 
 //     "endTime":"2018-01-19",
 //     "status":"BORRADOR",
 //     "hours": "24"
+// }
+
+// timeRegister
+// {
+//     "typeOfActivity":"TASK",
+//     "activityId":"121",
+//     "hours":"8",
+//     "dates": ["2020-01-01", "2020-01-02"]
 // }

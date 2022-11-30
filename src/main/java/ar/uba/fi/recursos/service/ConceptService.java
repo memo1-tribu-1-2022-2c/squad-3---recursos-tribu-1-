@@ -19,4 +19,8 @@ public class ConceptService {
     public Concept save(Concept concept) {
         return conceptRepository.save(concept);
     }
+
+    public void delete(Concept concept) {
+        conceptRepository.delete(concept);
+    }
 }
