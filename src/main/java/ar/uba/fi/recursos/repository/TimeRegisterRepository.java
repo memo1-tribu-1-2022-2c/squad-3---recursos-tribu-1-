@@ -15,6 +15,5 @@ public interface TimeRegisterRepository extends CrudRepository<TimeRegister, Lon
     @Override
     List<TimeRegister> findAll();
 
-    @Query(value = "select tr from TimeRegister tr where tr.hourDetail.workerId = :workerId and tr.date between :minDate and :maxDate order by tr.date asc")
-    List<TimeRegister> findTimeRegistersByDateIsGreaterThanEqualAndDateIsLessThanEqualAAndHourDetail_WorkerIdOrderByDateDateAsc(@Param("minDate") LocalDate minDate, @Param("maxDate") LocalDate maxDate, @Param("workerId") Long workerId);
+    List<TimeRegister> findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(LocalDate minDate, LocalDate maxDate, Long workerId);
 }
