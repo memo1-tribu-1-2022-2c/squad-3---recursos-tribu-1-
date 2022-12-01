@@ -5,6 +5,7 @@ import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
 import ar.uba.fi.recursos.service.HourDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -30,7 +31,7 @@ public class TimeRegisterController {
     private HourDetailService hourDetailService;
 
     @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId, @RequestParam LocalDate minDate, @RequestParam LocalDate maxDate) {
+    public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId, @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate minDate  , @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate maxDate) {
         return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate, maxDate, workerId);
     }
 
