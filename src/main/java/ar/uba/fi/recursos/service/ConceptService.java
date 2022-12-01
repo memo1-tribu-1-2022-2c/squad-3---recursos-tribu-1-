@@ -1,6 +1,7 @@
 package ar.uba.fi.recursos.service;
 
 import ar.uba.fi.recursos.model.Concept;
+import ar.uba.fi.recursos.model.ConceptStatus;
 import ar.uba.fi.recursos.repository.ConceptRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,7 @@ public class ConceptService {
     private ConceptRepository conceptRepository;
 
     public Concept createConcept(Concept concept) {
-        // hourDetail.setId(-1L);
+        concept.setStatus(ConceptStatus.AVAILABLE);
         return conceptRepository.save(concept);
     }
 

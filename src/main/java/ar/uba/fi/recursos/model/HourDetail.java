@@ -20,6 +20,8 @@ public class HourDetail {
     @Column(name = "id")
     private Long id;
     
+    private Long workerId;
+
     private LocalDate startTime;
     
     private LocalDate endTime;

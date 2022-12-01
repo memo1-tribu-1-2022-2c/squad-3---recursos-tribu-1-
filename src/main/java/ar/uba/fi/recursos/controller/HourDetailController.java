@@ -5,6 +5,7 @@ import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.repository.HourDetailRepository;
 import ar.uba.fi.recursos.service.HourDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,9 +27,12 @@ public class HourDetailController {
 
     @Autowired
     private HourDetailRepository hourDetailRepository;
-
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<HourDetail> getAllHourDetails() {
+    
+    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)	
+    public List<HourDetail> getAllHourDetails(@RequestParam(required = false) Long workerId) {
+        if (workerId != null) {
+            return this.hourDetailRepository.findByWorkerId(workerId);
+        }
         return this.hourDetailRepository.findAll();
     }
 
@@ -86,10 +90,21 @@ public class HourDetailController {
         return ResponseEntity.ok().build();
     }
 
+    // /totalProjectHours/<projectId>
+    @GetMapping(path = "/totalProjectHours/{projectId}")
+    public ResponseEntity<Integer> getTotalProjectHours(@PathVariable Long projectId) {
+        return ResponseEntity.ok(hourDetailService.getTotalProjectHours(projectId));
+    }
     
 }
+
+
+
+
+
 // hourDetail
 // {
+//     "workerId": 1,
 //     "startTime":"2017-01-19", 
 //     "endTime":"2018-01-19",
 //     "status":"BORRADOR",

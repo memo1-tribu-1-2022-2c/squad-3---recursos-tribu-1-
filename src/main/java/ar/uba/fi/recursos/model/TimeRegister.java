@@ -20,9 +20,7 @@ public class TimeRegister {
     @Column(name = "id")
     private Long id;
     
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "hd_id")
-    // private HourDetail hd;
+
 
     private TimeRegisterTypeOfActivity typeOfActivity;
 

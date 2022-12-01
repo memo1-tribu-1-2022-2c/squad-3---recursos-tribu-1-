@@ -27,12 +27,19 @@ public class ConceptController {
     private ConceptRepository conceptRepository;
 
     @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Concept> getAllConcepts() {
+    public List<Concept> getAllConcepts( @RequestParam(required = false) String name) {
+        if (name != null) {
+            return this.conceptRepository.findByName(name);
+        }
         return this.conceptRepository.findAll();
     }
 
     @PostMapping(path = "")
     public Concept createConcept(@RequestBody Concept concept) {
+        Optional<Concept> conceptOptional = conceptRepository.existsByName(concept.getName());
+        if (conceptOptional.isPresent()) {
+            throw new RuntimeException("Concept already exists");
+        }
         return conceptService.createConcept(concept);
     }
 
