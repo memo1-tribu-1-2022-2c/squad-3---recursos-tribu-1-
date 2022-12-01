@@ -32,7 +32,7 @@ public class HourDetail {
 
     private HourDetailType type;
     
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "hourDetailId")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "hourDetail")
     private List<TimeRegister> timeRegisters;
 
     public void addTimeRegister(TimeRegister timeRegister) {
