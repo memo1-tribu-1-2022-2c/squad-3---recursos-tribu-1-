@@ -54,51 +54,23 @@ public class HourDetailController {
             return ResponseEntity.notFound().build();
         }
 
-        //chequeos
-
         if (!hourDetailService.verifyDates(hourDetail)) {
             return ResponseEntity.badRequest().body("Dates are not valid or overlaps with other hour details");
         }
-        
+
         hourDetail.setId(id);
         return ResponseEntity.ok(hourDetailService.save(hourDetail));
     }
 
-    // Put mapping to add a new TimeRegister to an existing HourDetail
-    // @PutMapping(path = "/{id}/timeRegister")
-    // public ResponseEntity<Object> addTimeRegister(@RequestBody TimeRegister timeRegister, @PathVariable Long id){
-    //     Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
-        
-    //     if (!hourDetailOptional.isPresent()) {
-    //         System.out.println("HourDetail not found");
-    //         return ResponseEntity.notFound().build();
-    //     }
-    //     HourDetail hourDetail = hourDetailOptional.get();
-    //     hourDetail.addTimeRegister(timeRegister);
-    //     hourDetailService.save(hourDetail);
-    //     return ResponseEntity.ok().build();
-    // }
 
     @DeleteMapping(path = "/{id}")
     public void deleteHourDetail(@PathVariable Long id) {
         hourDetailRepository.deleteById(id);
     }
 
-    // @DeleteMapping(path = "/{id}/timeRegister/{timeRegisterId}")
-    // public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long id, @PathVariable Long timeRegisterId) {
-    //     Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
-    //     if (!hourDetailOptional.isPresent()) {
-    //         return ResponseEntity.notFound().build();
-    //     }
-    //     HourDetail hourDetail = hourDetailOptional.get();
-    //     hourDetail.removeTimeRegister(timeRegisterId);
-    //     hourDetailService.save(hourDetail);
-    //     return ResponseEntity.ok().build();
-    // }
 
-    // /totalProjectHours/<projectId>
     @GetMapping(path = "/totalProjectHours/{projectId}")
-    public ResponseEntity<Integer> getTotalProjectHours(@PathVariable Long projectId) {
+    public ResponseEntity<Double> getTotalProjectHours(@PathVariable Long projectId) {
         return ResponseEntity.ok(hourDetailService.getTotalProjectHours(projectId));
     }
     

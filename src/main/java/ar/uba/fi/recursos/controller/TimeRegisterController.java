@@ -62,8 +62,8 @@ public class TimeRegisterController {
 
         existingHourDetail.addTimeRegister(timeRegister);
         hourDetailService.save(existingHourDetail);
-
-        return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
+        // timeRegisterRepository.save(timeRegister)
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping(path = "/{id}")

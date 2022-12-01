@@ -9,6 +9,7 @@ import ar.uba.fi.recursos.exceptions.InvalidHourDetailHoursException;
 import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.HourDetailStatus;
 import ar.uba.fi.recursos.model.TimeRegister;
+import ar.uba.fi.recursos.model.TimeRegisterTypeOfActivity;
 import ar.uba.fi.recursos.repository.HourDetailRepository;
 
 
@@ -113,29 +114,35 @@ public class HourDetailService {
         return hourDetailRepository.save(hourDetail);
     }
 
-    public Integer getTotalProjectHours(Long projectId) {
+    public Double getTotalProjectHours(Long projectId) {
         String url = "https://squad2-2022-2c.herokuapp.com/api/v1/projects/"+ projectId +"/tasks";
         RestTemplate restTemplate = new RestTemplate();
 
         TaskData[] tasks_raw = restTemplate.getForObject(url, TaskData[].class);
         if (tasks_raw == null) {
-            return 0;
-        } else {
-            // list of tasks ids
-            List<Long> tasks = Arrays.asList(tasks_raw).stream().map(task -> task.getId() ).toList();
-            System.out.println("TASKS LIST="+tasks);
+            return 0D;
         }
-
-        // TODO : get all hours for each task and sum them
+        // list of tasks ids
+        List<Long> tasks = Arrays.asList(tasks_raw).stream().map(task -> task.getId() ).toList();
+        System.out.println("TASKS LIST="+tasks);
 
         // necesitamos el id de las tasks para buscar los hourDetails con timeRegisters que tengan ese 
         // activityId y que su tipo sea TASK
         // y sumar las horas de esos timeRegisters
-
         
+        Double totalHours = 0D;
+        for (HourDetail hd : this.hourDetailRepository.findAll()) {
+            for (TimeRegister tr : hd.getTimeRegisters()) {
+                if (tr.getTypeOfActivity() == TimeRegisterTypeOfActivity.TASK) {
+                    if (tasks.contains(tr.getActivityId())) {
+                        totalHours += tr.getHours();
+                    }
+                }
+            }
+        }
 
 
-        return 0;
+        return totalHours;
     }
 
     public Optional<HourDetail> findById(Long hourDetailId) {
