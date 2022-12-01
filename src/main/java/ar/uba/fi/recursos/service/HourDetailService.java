@@ -36,10 +36,9 @@ public class HourDetailService {
     // TODO: checkear esto mismo al hacer un put, para eso tenemos q modularizar y llamar a la funcion en ambos endpoints
 
     public HourDetail createHourDetail(HourDetail hourDetail) throws Throwable {
-         hourDetail.setId(-1L);
-        if(hourDetail.getHours()<=0){
-            throw new InvalidHourDetailHoursException("Las horas del parte no pueden ser negativas: " + hourDetail.getHours());
-        }
+        // if(hourDetail.getHours()<=0){
+        //     throw new InvalidHourDetailHoursException("Las horas del parte no pueden ser negativas: " + hourDetail.getHours());
+        // }
         Date startDate = Date.from(hourDetail.getStartTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Calendar cal = Calendar.getInstance();
         cal.setTime(startDate);
@@ -82,12 +81,12 @@ public class HourDetailService {
             }
         }
 
-        Date sD = Date.from(hourDetail.getStartTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date eD = Date.from(hourDetail.getEndTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        int difference_in_days = (int) (((eD.getTime() - sD.getTime()) / (1000*60*60*24))%365);
-        if(hourDetail.getHours()>24*(difference_in_days+1)){
-            throw new InvalidHourDetailHoursException("Las horas del parte por día no pueden ser mayores a 24: " + hourDetail.getHours());
-        }
+        // Date sD = Date.from(hourDetail.getStartTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        // Date eD = Date.from(hourDetail.getEndTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        // int difference_in_days = (int) (((eD.getTime() - sD.getTime()) / (1000*60*60*24))%365);
+        // if(hourDetail.getHours()>24*(difference_in_days+1)){
+        //     throw new InvalidHourDetailHoursException("Las horas del parte por día no pueden ser mayores a 24: " + hourDetail.getHours());
+        // }
 
 
         this.hourDetailRepository.findByWorkerId(hourDetail.getWorkerId()).stream().forEach(hd -> {
@@ -120,6 +119,8 @@ public class HourDetailService {
         // necesitamos el id de las tasks para buscar los hourDetails con timeRegisters que tengan ese 
         // activityId y que su tipo sea TASK
         // y sumar las horas de esos timeRegisters
+
+        
 
 
         return 0;

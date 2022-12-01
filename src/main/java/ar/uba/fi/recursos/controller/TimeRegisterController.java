@@ -24,10 +24,61 @@ public class TimeRegisterController {
 
     @Autowired
     private TimeRegisterRepository timeRegisterRepository;
+    private HourDetailRepository hourDetailRepository;
+    private HourDetailService hourDetailService;
     
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId, @RequestParam LocalDate minDate, @RequestParam LocalDate maxDate) {
         return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate, maxDate, workerId);
+    }
+
+    @PostMapping(path = "")
+    public ResponseEntity<Object> createTimeRegister(@RequestBody TimeRegister timeRegister) throws Throwable{
+        // TODO checkeos
+        // checks if the hourDetail exists
+        Long hourDetailId = timeRegister.getHourDetailId();
+        Optional<HourDetail> hourDetail = this.hourDetailRepository.findById(hourDetailId);
+        if (!hourDetail.isPresent()) {
+            return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
+        }
+        // hourdetail adds the timeRegister
+        hourDetail.get().addTimeRegister(timeRegister.getId());
+
+        return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
+    }
+
+    @PutMapping(path = "/{id}")
+    public ResponseEntity<Object> modifyTimeRegisterData(@RequestBody TimeRegister timeRegister, @PathVariable Long id){
+        // TODO checkeos
+        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(id);
+
+        if (!timeRegisterOptional.isPresent()) {
+            return ResponseEntity.badRequest().body("Time Register with id "+ id+ " does not exist");
+        }
+
+        timeRegister.setId(id);
+        timeRegisterRepository.save(timeRegister);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long id) {
+        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(id);
+
+        if (!timeRegisterOptional.isPresent()) {
+            return ResponseEntity.badRequest().body("Time Register with id "+ id+ " does not exist");
+        }
+        // hour detail deletes the time register
+        Long hourDetailId = timeRegisterOptional.get().getHourDetailId();
+        Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(hourDetailId);
+        if (hourDetailOptional.isPresent()) {
+            HourDetail hourDetail = hourDetailOptional.get();
+            hourDetail.removeTimeRegister(id);
+            hourDetailService.save(hourDetail);
+        }
+
+        timeRegisterRepository.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 
 }

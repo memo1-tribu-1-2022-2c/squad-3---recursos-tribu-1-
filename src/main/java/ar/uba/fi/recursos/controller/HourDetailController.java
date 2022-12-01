@@ -59,36 +59,36 @@ public class HourDetailController {
     }
 
     // Put mapping to add a new TimeRegister to an existing HourDetail
-    @PutMapping(path = "/{id}/timeRegister")
-    public ResponseEntity<Object> addTimeRegister(@RequestBody TimeRegister timeRegister, @PathVariable Long id){
-        Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
+    // @PutMapping(path = "/{id}/timeRegister")
+    // public ResponseEntity<Object> addTimeRegister(@RequestBody TimeRegister timeRegister, @PathVariable Long id){
+    //     Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
         
-        if (!hourDetailOptional.isPresent()) {
-            System.out.println("HourDetail not found");
-            return ResponseEntity.notFound().build();
-        }
-        HourDetail hourDetail = hourDetailOptional.get();
-        hourDetail.addTimeRegister(timeRegister);
-        hourDetailService.save(hourDetail);
-        return ResponseEntity.ok().build();
-    }
+    //     if (!hourDetailOptional.isPresent()) {
+    //         System.out.println("HourDetail not found");
+    //         return ResponseEntity.notFound().build();
+    //     }
+    //     HourDetail hourDetail = hourDetailOptional.get();
+    //     hourDetail.addTimeRegister(timeRegister);
+    //     hourDetailService.save(hourDetail);
+    //     return ResponseEntity.ok().build();
+    // }
 
     @DeleteMapping(path = "/{id}")
     public void deleteHourDetail(@PathVariable Long id) {
         hourDetailRepository.deleteById(id);
     }
 
-    @DeleteMapping(path = "/{id}/timeRegister/{timeRegisterId}")
-    public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long id, @PathVariable Long timeRegisterId) {
-        Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
-        if (!hourDetailOptional.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-        HourDetail hourDetail = hourDetailOptional.get();
-        hourDetail.removeTimeRegister(timeRegisterId);
-        hourDetailService.save(hourDetail);
-        return ResponseEntity.ok().build();
-    }
+    // @DeleteMapping(path = "/{id}/timeRegister/{timeRegisterId}")
+    // public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long id, @PathVariable Long timeRegisterId) {
+    //     Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
+    //     if (!hourDetailOptional.isPresent()) {
+    //         return ResponseEntity.notFound().build();
+    //     }
+    //     HourDetail hourDetail = hourDetailOptional.get();
+    //     hourDetail.removeTimeRegister(timeRegisterId);
+    //     hourDetailService.save(hourDetail);
+    //     return ResponseEntity.ok().build();
+    // }
 
     // /totalProjectHours/<projectId>
     @GetMapping(path = "/totalProjectHours/{projectId}")
@@ -108,13 +108,4 @@ public class HourDetailController {
 //     "startTime":"2017-01-19", 
 //     "endTime":"2018-01-19",
 //     "status":"BORRADOR",
-//     "hours": "24"
-// }
-
-// timeRegister
-// {
-//     "typeOfActivity":"TASK",
-//     "activityId":"121",
-//     "hours":"8",
-//     "dates": ["2020-01-01", "2020-01-02"]
 // }

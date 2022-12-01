@@ -29,18 +29,14 @@ public class TimeRegister {
 
     private Double hours;
 
-//    private Long hourDetailId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    private HourDetail hourDetail;
+    private Long hourDetailId;
 }
-
 
 // {
 //     "typeOfActivity":"TASK",
 //     "activityId":"121",
-//     "hours":"8",
 //     "date": "2020-01-01"
+//     "hours":"8",
+//     "hourDetailId": 1
 // }
-
 
