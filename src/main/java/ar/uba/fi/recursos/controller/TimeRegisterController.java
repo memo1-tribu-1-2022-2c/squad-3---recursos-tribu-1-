@@ -16,8 +16,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import javax.persistence.Transient;
-
 @Validated
 @RestController
 @RequestMapping(path = "/timeRegister")
@@ -37,10 +35,7 @@ public class TimeRegisterController {
 
 
     @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<TimeRegister> getAllTimeRegisters(@RequestParam(required = false) Long workerId) {
-        if (workerId != null) {
-            return this.timeRegisterRepository.findByHourDetailId(workerId);
-        }
+    public List<TimeRegister> getAllTimeRegisters() {
         return this.timeRegisterRepository.findAll();
     }
 
@@ -52,10 +47,8 @@ public class TimeRegisterController {
         if (!hourDetail.isPresent()) {
             return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
         }
-        // hourdetail adds the timeRegister
-        HourDetail existingHourDetail = hourDetail.get();
 
-        //chequear si existe un TimeRegister igual en el HourDetail
+        HourDetail existingHourDetail = hourDetail.get();
 
         if (timeRegisterRepository.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(timeRegister.getDate(), timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
             return ResponseEntity.badRequest().body("Time Register with given date and activity already exists");
@@ -63,7 +56,7 @@ public class TimeRegisterController {
 
         existingHourDetail.addTimeRegister(timeRegister);
         hourDetailService.save(existingHourDetail);
-        // timeRegisterRepository.save(timeRegister)
+
         return ResponseEntity.ok().build();
     }
 

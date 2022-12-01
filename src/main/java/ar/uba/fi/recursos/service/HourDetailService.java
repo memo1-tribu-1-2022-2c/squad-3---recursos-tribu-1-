@@ -18,26 +18,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.tomcat.util.json.JSONParser;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class HourDetailService {
 
     @Autowired
     private HourDetailRepository hourDetailRepository;
-
-    // TODO: ARREGLAR lo de las dates
 
 
     public HourDetail createHourDetail(HourDetail hourDetail) throws Throwable {
@@ -122,14 +116,10 @@ public class HourDetailService {
         if (tasks_raw == null) {
             return 0D;
         }
-        // list of tasks ids
+
         List<Long> tasks = Arrays.asList(tasks_raw).stream().map(task -> task.getId() ).toList();
         System.out.println("TASKS LIST="+tasks);
 
-        // necesitamos el id de las tasks para buscar los hourDetails con timeRegisters que tengan ese 
-        // activityId y que su tipo sea TASK
-        // y sumar las horas de esos timeRegisters
-        
         Double totalHours = 0D;
         for (HourDetail hd : this.hourDetailRepository.findAll()) {
             for (TimeRegister tr : hd.getTimeRegisters()) {

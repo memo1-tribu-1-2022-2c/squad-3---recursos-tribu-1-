@@ -23,4 +23,6 @@ public interface TimeRegisterRepository extends CrudRepository<TimeRegister, Lon
     boolean existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(LocalDate date, Long ActivityId, TimeRegisterTypeOfActivity TypeOfActivity);
 
     List<TimeRegister> findByHourDetailId(Long workerId);
+
+    List<TimeRegister> findByWorkerId(Long workerId);
 }
