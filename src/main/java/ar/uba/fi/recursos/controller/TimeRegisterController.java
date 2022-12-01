@@ -4,6 +4,8 @@ import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
 import ar.uba.fi.recursos.service.HourDetailService;
+import ar.uba.fi.recursos.service.TimeRegisterService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -28,6 +30,9 @@ public class TimeRegisterController {
     @Autowired
     private HourDetailService hourDetailService;
 
+    @Autowired
+    private TimeRegisterService timeRegisterService;
+
     @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId, @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate minDate  , @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate maxDate) {
         return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate, maxDate, workerId);
@@ -46,6 +51,11 @@ public class TimeRegisterController {
         Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
         if (!hourDetail.isPresent()) {
             return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
+        }
+
+        // check if activity is valid
+        if (!timeRegisterService.verifyActivity(timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
+            return ResponseEntity.badRequest().body("Activity is not valid for this hour detail");
         }
 
         HourDetail existingHourDetail = hourDetail.get();

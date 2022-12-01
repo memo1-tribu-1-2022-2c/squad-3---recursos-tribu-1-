@@ -33,12 +33,18 @@ public class HourDetailService {
     @Autowired
     private HourDetailRepository hourDetailRepository;
 
+    @Autowired
+    private ResourceService resourceService;
 
     public HourDetail createHourDetail(HourDetail hourDetail) throws Throwable {
         
 
         if(!verifyDates(hourDetail)) {
             throw new InvalidDatesException("Las fechas del parte no son validas o se superponen con unas existentes");
+        }
+        
+        if(!resourceService.findById(hourDetail.getWorkerId()).isPresent()) {
+            throw new InvalidTypeException("El recurso no existe");
         }
 
         hourDetail.setStatus(HourDetailStatus.BORRADOR);
@@ -93,9 +99,6 @@ public class HourDetailService {
             }
         }
 
-
-        //chequear si existe el workerId
-
         this.hourDetailRepository.findByWorkerId(hourDetail.getWorkerId()).stream().forEach(hd -> {
             if(hd.getStartTime().isBefore(hourDetail.getEndTime()) && hd.getEndTime().isAfter(hourDetail.getStartTime())){ // si se solapan
                 throw new OverlappingDatesException("Las horas se solapan con el parte: " + hd.getId());
@@ -118,7 +121,6 @@ public class HourDetailService {
         }
 
         List<Long> tasks = Arrays.asList(tasks_raw).stream().map(task -> task.getId() ).toList();
-        System.out.println("TASKS LIST="+tasks);
 
         Double totalHours = 0D;
         for (HourDetail hd : this.hourDetailRepository.findAll()) {
