@@ -17,7 +17,9 @@ public interface TimeRegisterRepository extends CrudRepository<TimeRegister, Lon
     @Override
     List<TimeRegister> findAll();
 
-    List<TimeRegister> findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(LocalDate minDate, LocalDate maxDate, Long workerId);
+    //List<TimeRegister> findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(LocalDate minDate, LocalDate maxDate, Long workerId);
 
     boolean existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(LocalDate date, Long ActivityId, TimeRegisterTypeOfActivity TypeOfActivity);
+
+    List<TimeRegister> findByHourDetailId(Long workerId);
 }

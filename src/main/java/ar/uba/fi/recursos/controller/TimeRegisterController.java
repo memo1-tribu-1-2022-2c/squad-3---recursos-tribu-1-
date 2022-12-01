@@ -15,6 +15,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.Transient;
+
 @Validated
 @RestController
 @RequestMapping(path = "/timeRegister")
@@ -27,15 +29,24 @@ public class TimeRegisterController {
     @Autowired
     private HourDetailService hourDetailService;
     
-    @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId, @RequestParam LocalDate minDate, @RequestParam LocalDate maxDate) {
-        return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate, maxDate, workerId);
+    // @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
+    // public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId, @RequestParam LocalDate minDate, @RequestParam LocalDate maxDate) {
+    //     return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate, maxDate, workerId);
+    // }
+
+
+    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<TimeRegister> getAllTimeRegisters(@RequestParam(required = false) Long workerId) {
+        if (workerId != null) {
+            return this.timeRegisterRepository.findByHourDetailId(workerId);
+        }
+        return this.timeRegisterRepository.findAll();
     }
 
     @PostMapping(path = "")
     public ResponseEntity<Object> createTimeRegister(@RequestBody TimeRegister timeRegister) {
         
-        Long hourDetailId = timeRegister.getHourDetail().getId();
+        Long hourDetailId = timeRegister.getHourDetailId();
         Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
         if (!hourDetail.isPresent()) {
             return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
@@ -49,7 +60,6 @@ public class TimeRegisterController {
             return ResponseEntity.badRequest().body("Time Register with given date and activity already exists");
         }
 
-        timeRegister.setHourDetail(existingHourDetail);
         existingHourDetail.addTimeRegister(timeRegister);
         hourDetailService.save(existingHourDetail);
 
@@ -83,7 +93,7 @@ public class TimeRegisterController {
         TimeRegister existingTimeRegister = timeRegisterOptional.get();
 
         // hour detail deletes the time register
-        Long hourDetailId = existingTimeRegister.getHourDetail().getId();
+        Long hourDetailId = existingTimeRegister.getHourDetailId();
         Optional<HourDetail> hourDetailOptional = hourDetailService.findById(hourDetailId);
         
         if (!hourDetailOptional.isPresent()) {

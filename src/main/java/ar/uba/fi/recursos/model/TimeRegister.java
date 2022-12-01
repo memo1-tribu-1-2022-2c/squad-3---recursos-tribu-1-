@@ -28,10 +28,10 @@ public class TimeRegister {
 
     private Double hours;
 
-    //private Long hourDetailId;
+    private Long hourDetailId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private HourDetail hourDetail;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // private HourDetail hourDetail;
 }
 
 // {
