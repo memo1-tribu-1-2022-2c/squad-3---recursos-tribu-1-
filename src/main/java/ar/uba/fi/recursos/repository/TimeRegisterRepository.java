@@ -24,5 +24,4 @@ public interface TimeRegisterRepository extends CrudRepository<TimeRegister, Lon
 
     List<TimeRegister> findByHourDetailId(Long workerId);
 
-    List<TimeRegister> findByWorkerId(Long workerId);
 }
