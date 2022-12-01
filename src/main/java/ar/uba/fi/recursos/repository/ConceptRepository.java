@@ -13,7 +13,7 @@ public interface ConceptRepository extends CrudRepository<Concept, Long> {
     @Override
     List<Concept> findAll();
 
-    Optional<Concept> existsByName(String name);
+    boolean existsByName(String name);
 
     List<Concept> findByName(String name);
 }
