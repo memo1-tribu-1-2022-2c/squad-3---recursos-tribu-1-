@@ -56,6 +56,10 @@ public class HourDetailController {
 
         //chequeos
 
+        if (!hourDetailService.verifyDates(hourDetail)) {
+            return ResponseEntity.badRequest().body("Dates are not valid or overlaps with other hour details");
+        }
+        
         hourDetail.setId(id);
         return ResponseEntity.ok(hourDetailService.save(hourDetail));
     }

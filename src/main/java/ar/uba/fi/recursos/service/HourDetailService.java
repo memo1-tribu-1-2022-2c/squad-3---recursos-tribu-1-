@@ -37,19 +37,29 @@ public class HourDetailService {
     private HourDetailRepository hourDetailRepository;
 
     // TODO: ARREGLAR lo de las dates
-    // TODO: checkear esto mismo al hacer un put, para eso tenemos q modularizar y llamar a la funcion en ambos endpoints
+
 
     public HourDetail createHourDetail(HourDetail hourDetail) throws Throwable {
-        // if(hourDetail.getHours()<=0){
-        //     throw new InvalidHourDetailHoursException("Las horas del parte no pueden ser negativas: " + hourDetail.getHours());
-        // }
+        
+
+        if(!verifyDates(hourDetail)) {
+            throw new InvalidDatesException("Las fechas del parte no son validas o se superponen con unas existentes");
+        }
+
+        hourDetail.setStatus(HourDetailStatus.BORRADOR);
+        hourDetail.setTimeRegisters(new ArrayList<TimeRegister>());
+        return hourDetailRepository.save(hourDetail);
+    }
+
+    public boolean verifyDates(HourDetail hourDetail) {
         Date startDate = Date.from(hourDetail.getStartTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Calendar cal = Calendar.getInstance();
         cal.setTime(startDate);
         switch (hourDetail.getType()){
             case SEMANAL: {
                 if(!((cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY))){
-                    throw new InvalidDatesException("La fecha especificada no es un lunes: " + startDate);
+                    return false;
+                    // throw new InvalidDatesException("La fecha especificada no es un lunes: " + startDate);
                 }
                 cal.add(Calendar.DAY_OF_MONTH, 6);
                 hourDetail.setEndTime(cal.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
@@ -57,7 +67,8 @@ public class HourDetailService {
             }
             case QUINCENAL: {
                 if(!((cal.get(Calendar.DAY_OF_MONTH) == 1)) && !((cal.get(Calendar.DAY_OF_MONTH) == 16))){
-                    throw new InvalidDatesException("La fecha especificada no es un 1 o 16 del mes: " + startDate);
+                    return false;
+                    // throw new InvalidDatesException("La fecha especificada no es un 1 o 16 del mes: " + startDate);
                 }
 
                 if((cal.get(Calendar.DAY_OF_MONTH) == 1)){
@@ -73,7 +84,8 @@ public class HourDetailService {
             case MENSUAL: {
 
                 if(!((cal.get(Calendar.DAY_OF_MONTH) == 1))){
-                    throw new InvalidDatesException("La fecha especificada no es el primer día del mes: " + startDate);
+                    return false;
+                    // throw new InvalidDatesException("La fecha especificada no es el primer día del mes: " + startDate);
                 }
                 int max_day = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
                 cal.set(Calendar.DAY_OF_MONTH, max_day);
@@ -81,16 +93,10 @@ public class HourDetailService {
                 break;
             }
             default: {
-                throw new InvalidTypeException("El tipo especificado es inválido: " + hourDetail.getType());
+                return false;
+                // throw new InvalidTypeException("El tipo especificado es inválido: " + hourDetail.getType());
             }
         }
-
-        // Date sD = Date.from(hourDetail.getStartTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        // Date eD = Date.from(hourDetail.getEndTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        // int difference_in_days = (int) (((eD.getTime() - sD.getTime()) / (1000*60*60*24))%365);
-        // if(hourDetail.getHours()>24*(difference_in_days+1)){
-        //     throw new InvalidHourDetailHoursException("Las horas del parte por día no pueden ser mayores a 24: " + hourDetail.getHours());
-        // }
 
 
         //chequear si existe el workerId
@@ -100,9 +106,7 @@ public class HourDetailService {
                 throw new OverlappingDatesException("Las horas se solapan con el parte: " + hd.getId());
             }
         });
-        hourDetail.setStatus(HourDetailStatus.BORRADOR);
-        hourDetail.setTimeRegisters(new ArrayList<TimeRegister>());
-        return hourDetailRepository.save(hourDetail);
+        return true;
     }
 
     public HourDetail save(HourDetail hourDetail) {

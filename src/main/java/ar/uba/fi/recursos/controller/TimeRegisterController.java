@@ -31,7 +31,7 @@ public class TimeRegisterController {
     
     // @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
     // public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId, @RequestParam LocalDate minDate, @RequestParam LocalDate maxDate) {
-    //     return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate, maxDate, workerId);
+    //     return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetailId_WorkerIdOrderByDateAsc(minDate, maxDate, workerId);
     // }
 
 

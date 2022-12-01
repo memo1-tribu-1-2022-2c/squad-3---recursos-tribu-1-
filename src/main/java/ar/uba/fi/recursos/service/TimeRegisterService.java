@@ -1,5 +1,6 @@
 package ar.uba.fi.recursos.service;
 
+import ar.uba.fi.recursos.exceptions.InvalidHourDetailHoursException;
 import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,10 @@ public class TimeRegisterService {
     private TimeRegisterRepository timeRegisterRepository;
 
     public TimeRegister createTimeRegister(TimeRegister timeRegister) {
-        // hourDetail.setId(-1L);
+        if(timeRegister.getHours()<=0 && timeRegister.getHours()>24){
+            throw new InvalidHourDetailHoursException("Las horas del parte no pueden ser negativas o mayores a 24: " + timeRegister.getHours());
+        }
+
         return timeRegisterRepository.save(timeRegister);
     }
 
