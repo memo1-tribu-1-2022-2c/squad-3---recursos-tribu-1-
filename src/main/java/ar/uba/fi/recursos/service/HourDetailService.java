@@ -1,5 +1,6 @@
 package ar.uba.fi.recursos.service;
 
+import ar.uba.fi.recursos.dtos.TaskData;
 import ar.uba.fi.recursos.exceptions.InvalidDatesException;
 import ar.uba.fi.recursos.exceptions.InvalidTypeException;
 import ar.uba.fi.recursos.exceptions.OverlappingDatesException;
@@ -102,40 +103,25 @@ public class HourDetailService {
     }
 
     public Integer getTotalProjectHours(Long projectId) {
-        // TODO
         String url = "https://squad2-2022-2c.herokuapp.com/api/v1/projects/"+ projectId +"/tasks";
         RestTemplate restTemplate = new RestTemplate();
-        
-        // get json from url
-        // String json = restTemplate.getForObject(url, Object.class);
-        // parse json
 
-        // Integer totalHours = 0;
+        TaskData[] tasks_raw = restTemplate.getForObject(url, TaskData[].class);
+        if (tasks_raw == null) {
+            return 0;
+        } else {
+            // list of tasks ids
+            List<Long> tasks = Arrays.asList(tasks_raw).stream().map(task -> task.getId() ).toList();
+            System.out.println("TASKS LIST="+tasks);
+        }
 
+        // TODO : get all hours for each task and sum them
 
         // necesitamos el id de las tasks para buscar los hourDetails con timeRegisters que tengan ese 
         // activityId y que su tipo sea TASK
         // y sumar las horas de esos timeRegisters
 
 
-        // System.out.println("tasks: " + json);
-        
-        // try {
-        //     JSONParser parser = new JSONParser( json );
-            
-        //     // get the value of the first name
-        //     String firstName = parser.parseObject().get( "firstName" ).toString();
-        //     System.out.println( "First Name: " + firstName );
-        //     System.out.println("tasks mapping: " + mapping);
-        // }
-        // catch (Exception e) {
-        //     System.out.println("Error: " + e);
-        // }
-
-
-
-
         return 0;
     }
-
 }
