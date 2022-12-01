@@ -7,16 +7,20 @@ import ar.uba.fi.recursos.exceptions.OverlappingDatesException;
 import ar.uba.fi.recursos.exceptions.InvalidHourDetailHoursException;
 import ar.uba.fi.recursos.exceptions.InvalidHourDetailHoursException;
 import ar.uba.fi.recursos.model.HourDetail;
+import ar.uba.fi.recursos.model.HourDetailStatus;
+import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.repository.HourDetailRepository;
 
 
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,11 +93,15 @@ public class HourDetailService {
         // }
 
 
+        //chequear si existe el workerId
+
         this.hourDetailRepository.findByWorkerId(hourDetail.getWorkerId()).stream().forEach(hd -> {
             if(hd.getStartTime().isBefore(hourDetail.getEndTime()) && hd.getEndTime().isAfter(hourDetail.getStartTime())){ // si se solapan
                 throw new OverlappingDatesException("Las horas se solapan con el parte: " + hd.getId());
             }
         });
+        hourDetail.setStatus(HourDetailStatus.BORRADOR);
+        hourDetail.setTimeRegisters(new ArrayList<TimeRegister>());
         return hourDetailRepository.save(hourDetail);
     }
 
@@ -124,5 +132,9 @@ public class HourDetailService {
 
 
         return 0;
+    }
+
+    public Optional<HourDetail> findById(Long hourDetailId) {
+        return this.hourDetailRepository.findById(hourDetailId);
     }
 }

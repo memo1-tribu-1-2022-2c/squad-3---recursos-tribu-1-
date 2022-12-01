@@ -53,9 +53,11 @@ public class HourDetailController {
         if (!hourDetailOptional.isPresent()) {
             return ResponseEntity.notFound().build();
         }
+
+        //chequeos
+
         hourDetail.setId(id);
-        hourDetailService.save(hourDetail);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(hourDetailService.save(hourDetail));
     }
 
     // Put mapping to add a new TimeRegister to an existing HourDetail

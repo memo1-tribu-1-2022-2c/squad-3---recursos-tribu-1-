@@ -25,22 +25,20 @@ public class HourDetail {
     private LocalDate startTime;
     
     private LocalDate endTime;
-    
-    private Double hours;
 
     private HourDetailStatus status;
 
     private HourDetailType type;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "hourDetail")
-    private List<Long> timeRegistersIds;
+    private List<TimeRegister> timeRegisters;
     // Use of @OneToMany or @ManyToMany targeting an unmapped class: ar.uba.fi.recursos.model.HourDetail.timeRegistersIds[java.lang.Long]
 
-    public void addTimeRegister(Long timeRegisterId) {
-        timeRegistersIds.add(timeRegisterId);
+    public void addTimeRegister(TimeRegister timeRegister) {
+        timeRegisters.add(timeRegister);
     }
 
-    public void removeTimeRegister(Long timeRegisterId) {
-        timeRegistersIds.removeIf(id -> id.equals(timeRegisterId));
+    public void removeTimeRegister(TimeRegister timeRegister) {
+        timeRegisters.removeIf(id -> id.equals(timeRegister));
     }
 }

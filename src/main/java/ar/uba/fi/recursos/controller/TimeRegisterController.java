@@ -2,7 +2,6 @@ package ar.uba.fi.recursos.controller;
 
 import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.TimeRegister;
-import ar.uba.fi.recursos.repository.HourDetailRepository;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
 import ar.uba.fi.recursos.service.HourDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,8 @@ public class TimeRegisterController {
 
     @Autowired
     private TimeRegisterRepository timeRegisterRepository;
-    private HourDetailRepository hourDetailRepository;
+
+    @Autowired
     private HourDetailService hourDetailService;
     
     @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -33,16 +33,25 @@ public class TimeRegisterController {
     }
 
     @PostMapping(path = "")
-    public ResponseEntity<Object> createTimeRegister(@RequestBody TimeRegister timeRegister) throws Throwable{
-        // TODO checkeos
-        // checks if the hourDetail exists
-        Long hourDetailId = timeRegister.getHourDetailId();
-        Optional<HourDetail> hourDetail = this.hourDetailRepository.findById(hourDetailId);
+    public ResponseEntity<Object> createTimeRegister(@RequestBody TimeRegister timeRegister) {
+        
+        Long hourDetailId = timeRegister.getHourDetail().getId();
+        Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
         if (!hourDetail.isPresent()) {
             return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
         }
         // hourdetail adds the timeRegister
-        hourDetail.get().addTimeRegister(timeRegister.getId());
+        HourDetail existingHourDetail = hourDetail.get();
+
+        //chequear si existe un TimeRegister igual en el HourDetail
+
+        if (timeRegisterRepository.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(timeRegister.getDate(), timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
+            return ResponseEntity.badRequest().body("Time Register with given date and activity already exists");
+        }
+
+        timeRegister.setHourDetail(existingHourDetail);
+        existingHourDetail.addTimeRegister(timeRegister);
+        hourDetailService.save(existingHourDetail);
 
         return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
     }
@@ -57,8 +66,10 @@ public class TimeRegisterController {
         }
 
         timeRegister.setId(id);
-        timeRegisterRepository.save(timeRegister);
-        return ResponseEntity.ok().build();
+
+        //hay que chequear q sean validos los otros atributos del TimeRegister
+
+        return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
     }
 
     @DeleteMapping(path = "/{id}")
@@ -68,15 +79,20 @@ public class TimeRegisterController {
         if (!timeRegisterOptional.isPresent()) {
             return ResponseEntity.badRequest().body("Time Register with id "+ id+ " does not exist");
         }
-        // hour detail deletes the time register
-        Long hourDetailId = timeRegisterOptional.get().getHourDetailId();
-        Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(hourDetailId);
-        if (hourDetailOptional.isPresent()) {
-            HourDetail hourDetail = hourDetailOptional.get();
-            hourDetail.removeTimeRegister(id);
-            hourDetailService.save(hourDetail);
-        }
 
+        TimeRegister existingTimeRegister = timeRegisterOptional.get();
+
+        // hour detail deletes the time register
+        Long hourDetailId = existingTimeRegister.getHourDetail().getId();
+        Optional<HourDetail> hourDetailOptional = hourDetailService.findById(hourDetailId);
+        
+        if (!hourDetailOptional.isPresent()) {
+            return ResponseEntity.badRequest().body("Hour detail with id " + hourDetailId + "does not exist");
+        }
+        
+        HourDetail hourDetail = hourDetailOptional.get();
+        hourDetail.removeTimeRegister(existingTimeRegister);
+        hourDetailService.save(hourDetail);
         timeRegisterRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
