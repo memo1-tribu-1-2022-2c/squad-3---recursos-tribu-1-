@@ -11,4 +11,6 @@ public interface HourDetailRepository extends CrudRepository<HourDetail, Long> {
 
     @Override
     List<HourDetail> findAll();
+
+    List<HourDetail> findByWorkerId(Long workerId);
 }
