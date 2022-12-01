@@ -32,8 +32,7 @@ public class HourDetail {
 
     private HourDetailType type;
     
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "hd_id")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "hourDetailId")
     private List<TimeRegister> timeRegisters;
 
     public void addTimeRegister(TimeRegister timeRegister) {

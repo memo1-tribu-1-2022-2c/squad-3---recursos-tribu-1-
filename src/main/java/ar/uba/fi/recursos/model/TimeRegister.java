@@ -21,16 +21,18 @@ public class TimeRegister {
     private Long id;
     
 
-
     private TimeRegisterTypeOfActivity typeOfActivity;
 
     private Long activityId; // Id of the task or concept
-    
+
+    private LocalDate date;
+
     private Double hours;
 
-    @ElementCollection(targetClass=LocalDate.class)
-    @CollectionTable(name="tbl_tr_dates", joinColumns=@JoinColumn(name="tr_id"))
-    private List<LocalDate> dates;
+    private Long hourDetailId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private HourDetail hourDetail;
 }
 
 
@@ -38,7 +40,7 @@ public class TimeRegister {
 //     "typeOfActivity":"TASK",
 //     "activityId":"121",
 //     "hours":"8",
-//     "dates": ["2020-01-01", "2020-01-02"]
+//     "date": "2020-01-01"
 // }
 
 
