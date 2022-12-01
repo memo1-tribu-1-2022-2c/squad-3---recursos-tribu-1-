@@ -99,11 +99,11 @@ public class HourDetailService {
             }
         }
 
-        this.hourDetailRepository.findByWorkerId(hourDetail.getWorkerId()).stream().forEach(hd -> {
-            if(hd.getStartTime().isBefore(hourDetail.getEndTime()) && hd.getEndTime().isAfter(hourDetail.getStartTime())){ // si se solapan
-                throw new OverlappingDatesException("Las horas se solapan con el parte: " + hd.getId());
-            }
-        });
+        // this.hourDetailRepository.findByWorkerId(hourDetail.getWorkerId()).stream().forEach(hd -> {
+        //     if(hd.getStartTime().isBefore(hourDetail.getEndTime()) && hd.getEndTime().isAfter(hourDetail.getStartTime())){ // si se solapan
+        //         throw new OverlappingDatesException("Las horas se solapan con el parte: " + hd.getId());
+        //     }
+        // });
         return true;
     }
 

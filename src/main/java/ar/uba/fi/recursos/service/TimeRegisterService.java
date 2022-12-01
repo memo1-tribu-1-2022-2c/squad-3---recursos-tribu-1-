@@ -32,21 +32,22 @@ public class TimeRegisterService {
     }
 
     public boolean verifyActivity(Long activityId, TimeRegisterTypeOfActivity typeOfActivity) {
-        if(typeOfActivity == TimeRegisterTypeOfActivity.TASK){
-            String url = "https://squad2-2022-2c.herokuapp.com/api/v1/tasks/" + activityId;
-            RestTemplate restTemplate = new RestTemplate();
-            TaskData task_raw = restTemplate.getForObject(url, TaskData.class);
-            if (task_raw == null) {
-                return false;
-            }
-            return true;
+        // if(typeOfActivity == TimeRegisterTypeOfActivity.TASK){
+        //     String url = "https://squad2-2022-2c.herokuapp.com/api/v1/tasks/" + activityId;
+        //     RestTemplate restTemplate = new RestTemplate();
+        //     TaskData task_raw = restTemplate.getForObject(url, TaskData.class);
+        //     if (task_raw == null) {
+        //         return false;
+        //     }
+        //     return true;
 
-        } else if(typeOfActivity == TimeRegisterTypeOfActivity.CONCEPT){
-            if(conceptRepository.findById(activityId).isEmpty()) {
-                return false;
-            }
-            return true;
-        }
-        return false;
+        // } else if(typeOfActivity == TimeRegisterTypeOfActivity.CONCEPT){
+        //     if(conceptRepository.findById(activityId).isEmpty()) {
+        //         return false;
+        //     }
+        //     return true;
+        // }
+        // return false;
+        return true;
     }
 }
