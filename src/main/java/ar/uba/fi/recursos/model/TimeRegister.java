@@ -1,11 +1,8 @@
 package ar.uba.fi.recursos.model;
 
 import lombok.*;
-
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
-
 
 @Entity
 @Getter
@@ -32,10 +29,9 @@ public class TimeRegister {
 }
 
 // {
-//     "typeOfActivity":"TASK",
-//     "activityId":"121",
-//     "date": "2020-01-01"
-//     "hours":"8",
-//     "hourDetailId": 1
+// "typeOfActivity":"TASK",
+// "activityId":"121",
+// "date": "2020-01-01"
+// "hours":"8",
+// "hourDetailId": 1
 // }
-

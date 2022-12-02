@@ -36,7 +36,7 @@ public class ConceptController {
     }
 
     @PostMapping(path = "")
-    public ResponseEntity createConcept(@RequestBody Concept concept) {
+    public ResponseEntity<Object> createConcept(@RequestBody Concept concept) {
         if (conceptRepository.existsByName(concept.getName())) {
             return ResponseEntity.badRequest().body("A concept with the same name already exists");
         }
@@ -49,7 +49,7 @@ public class ConceptController {
     }
 
     @PutMapping(path = "/{id}")
-    public ResponseEntity<Object> modifyConcept(@RequestBody Concept concept, @PathVariable Long id){
+    public ResponseEntity<Object> modifyConcept(@RequestBody Concept concept, @PathVariable Long id) {
         Optional<Concept> conceptOptional = conceptRepository.findById(id);
 
         if (!conceptOptional.isPresent()) {
@@ -80,8 +80,8 @@ public class ConceptController {
 }
 
 // {
-//     "name":"no maternidad", 
-//     "description":"descripcionnn",
-//     "status":"AVAILABLE",
-//     "remunerable": "false"
+// "name":"no maternidad",
+// "description":"descripcionnn",
+// "status":"AVAILABLE",
+// "remunerable": "false"
 // }
