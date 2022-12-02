@@ -1,9 +1,7 @@
 package ar.uba.fi.recursos.model;
 
 import lombok.*;
-
 import javax.persistence.*;
-
 
 @Entity
 @Getter
@@ -24,6 +22,4 @@ public class Concept {
 
     private Boolean remunerable;
 
-
 }
-

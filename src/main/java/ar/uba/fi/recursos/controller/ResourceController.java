@@ -12,8 +12,8 @@ import ar.uba.fi.recursos.service.ResourceService;
 
 @Validated
 @RestController
-@EnableSwagger2
 @RequestMapping(path = "/resources")
+@EnableSwagger2
 public class ResourceController {
 
     @Autowired
