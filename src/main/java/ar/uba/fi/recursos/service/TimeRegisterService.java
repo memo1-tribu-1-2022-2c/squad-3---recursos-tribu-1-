@@ -1,5 +1,9 @@
 package ar.uba.fi.recursos.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +32,7 @@ public class TimeRegisterService {
         return timeRegisterRepository.save(timeRegister);
     }
 
-    public boolean verifyActivity(Long activityId, TimeRegisterTypeOfActivity typeOfActivity) {
+    public boolean isValidActivity(Long activityId, TimeRegisterTypeOfActivity typeOfActivity) {
         // if(typeOfActivity == TimeRegisterTypeOfActivity.TASK){
         // String url = "https://squad2-2022-2c.herokuapp.com/api/v1/tasks/" +
         // activityId;
@@ -47,5 +51,29 @@ public class TimeRegisterService {
         // }
         // return false;
         return true;
+    }
+
+    public List<TimeRegister> findAll() {
+        return timeRegisterRepository.findAll();
+    }
+
+    public boolean existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(LocalDate date, Long activityId,
+            TimeRegisterTypeOfActivity typeOfActivity) {
+        return timeRegisterRepository.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(date, activityId,
+                typeOfActivity);
+    }
+
+    public Optional<TimeRegister> findById(Long timeRegisterId) {
+        return timeRegisterRepository.findById(timeRegisterId);
+    }
+
+    public void deleteById(Long timeRegisterId) {
+        timeRegisterRepository.deleteById(timeRegisterId);
+    }
+
+    public List<TimeRegister> findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(LocalDate minDate,
+            LocalDate maxDate, Long workerId) {
+        return timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate,
+                maxDate, workerId);
     }
 }
