@@ -1,43 +1,43 @@
 package ar.uba.fi.recursos.controller;
 
-import ar.uba.fi.recursos.model.HourDetail;
-import ar.uba.fi.recursos.model.TimeRegister;
-import ar.uba.fi.recursos.repository.TimeRegisterRepository;
-import ar.uba.fi.recursos.service.HourDetailService;
-import ar.uba.fi.recursos.service.TimeRegisterService;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import ar.uba.fi.recursos.model.HourDetail;
+import ar.uba.fi.recursos.model.TimeRegister;
+import ar.uba.fi.recursos.repository.TimeRegisterRepository;
+import ar.uba.fi.recursos.service.HourDetailService;
+import ar.uba.fi.recursos.service.TimeRegisterService;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Validated
 @RestController
-@RequestMapping(path = "/timeRegister")
+@RequestMapping(path = "/timeRegisters")
 @EnableSwagger2
 public class TimeRegisterController {
 
     @Autowired
     private TimeRegisterRepository timeRegisterRepository;
-
     @Autowired
     private HourDetailService hourDetailService;
-
     @Autowired
     private TimeRegisterService timeRegisterService;
-
-    @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId, @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate minDate  , @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate maxDate) {
-        return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate, maxDate, workerId);
-    }
-
 
     @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TimeRegister> getAllTimeRegisters() {
@@ -46,7 +46,7 @@ public class TimeRegisterController {
 
     @PostMapping(path = "")
     public ResponseEntity<Object> createTimeRegister(@RequestBody TimeRegister timeRegister) {
-        
+
         Long hourDetailId = timeRegister.getHourDetailId();
         Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
         if (!hourDetail.isPresent()) {
@@ -60,7 +60,8 @@ public class TimeRegisterController {
 
         HourDetail existingHourDetail = hourDetail.get();
 
-        if (timeRegisterRepository.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(timeRegister.getDate(), timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
+        if (timeRegisterRepository.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(timeRegister.getDate(),
+                timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
             return ResponseEntity.badRequest().body("Time Register with given date and activity already exists");
         }
 
@@ -70,28 +71,29 @@ public class TimeRegisterController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping(path = "/{id}")
-    public ResponseEntity<Object> modifyTimeRegisterData(@RequestBody TimeRegister timeRegister, @PathVariable Long id){
+    @PutMapping(path = "/{timeRegisterId}")
+    public ResponseEntity<Object> modifyTimeRegister(@RequestBody TimeRegister timeRegister,
+            @PathVariable Long timeRegisterId) {
         // TODO checkeos
-        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(id);
+        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(timeRegisterId);
 
         if (!timeRegisterOptional.isPresent()) {
-            return ResponseEntity.badRequest().body("Time Register with id "+ id+ " does not exist");
+            return ResponseEntity.badRequest().body("Time Register with id " + timeRegisterId + " does not exist");
         }
 
-        timeRegister.setId(id);
+        timeRegister.setId(timeRegisterId);
 
-        //hay que chequear q sean validos los otros atributos del TimeRegister
+        // hay que chequear q sean validos los otros atributos del TimeRegister
 
         return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
     }
 
-    @DeleteMapping(path = "/{id}")
-    public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long id) {
-        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(id);
+    @DeleteMapping(path = "/{timeRegisterId}")
+    public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long timeRegisterId) {
+        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(timeRegisterId);
 
         if (!timeRegisterOptional.isPresent()) {
-            return ResponseEntity.badRequest().body("Time Register with id "+ id+ " does not exist");
+            return ResponseEntity.badRequest().body("Time Register with id " + timeRegisterId + " does not exist");
         }
 
         TimeRegister existingTimeRegister = timeRegisterOptional.get();
@@ -99,37 +101,41 @@ public class TimeRegisterController {
         // hour detail deletes the time register
         Long hourDetailId = existingTimeRegister.getHourDetailId();
         Optional<HourDetail> hourDetailOptional = hourDetailService.findById(hourDetailId);
-        
+
         if (!hourDetailOptional.isPresent()) {
             return ResponseEntity.badRequest().body("Hour detail with id " + hourDetailId + "does not exist");
         }
-        
+
         HourDetail hourDetail = hourDetailOptional.get();
         hourDetail.removeTimeRegister(existingTimeRegister);
         hourDetailService.save(hourDetail);
-        timeRegisterRepository.deleteById(id);
+        timeRegisterRepository.deleteById(timeRegisterId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate minDate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate maxDate) {
+        return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate,
+                maxDate, workerId);
     }
 
 }
 
-
-
-
-
 // hourDetail
 // {
-//     "workerId": 1,
-//     "startTime":"2017-01-19", 
-//     "endTime":"2018-01-19",
-//     "status":"BORRADOR",
-//     "hours": "24"
+// "workerId": 1,
+// "startTime":"2017-01-19",
+// "endTime":"2018-01-19",
+// "status":"BORRADOR",
+// "hours": "24"
 // }
 
 // timeRegister
 // {
-//     "typeOfActivity":"TASK",
-//     "activityId":"121",
-//     "hours":"8",
-//     "dates": ["2020-01-01", "2020-01-02"]
+// "typeOfActivity":"TASK",
+// "activityId":"121",
+// "hours":"8",
+// "dates": ["2020-01-01", "2020-01-02"]
 // }

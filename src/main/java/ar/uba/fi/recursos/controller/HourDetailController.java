@@ -1,7 +1,6 @@
 package ar.uba.fi.recursos.controller;
 
 import ar.uba.fi.recursos.model.HourDetail;
-import ar.uba.fi.recursos.repository.HourDetailRepository;
 import ar.uba.fi.recursos.service.HourDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -14,53 +13,56 @@ import java.util.Optional;
 
 @Validated
 @RestController
-@RequestMapping(path = "/hourDetail")
+@RequestMapping(path = "/hourDetails")
 @EnableSwagger2
 public class HourDetailController {
 
     @Autowired
     private HourDetailService hourDetailService;
 
-    @Autowired
-    private HourDetailRepository hourDetailRepository;
-
     @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<HourDetail> getAllHourDetails(@RequestParam(required = false) Long workerId) {
-        if (workerId != null) {
-            return this.hourDetailRepository.findByWorkerId(workerId);
-        }
-        return this.hourDetailRepository.findAll();
+    public ResponseEntity<List<HourDetail>> getAllHourDetails(@RequestParam(required = false) Long workerId) {
+        if (workerId != null)
+            return ResponseEntity.ok(hourDetailService.findByWorkerId(workerId));
+        return ResponseEntity.ok(hourDetailService.findAll());
     }
 
     @PostMapping(path = "")
-    public HourDetail createHourDetail(@RequestBody HourDetail hourDetail) throws Throwable {
-        return hourDetailService.createHourDetail(hourDetail);
+    public ResponseEntity<Object> createHourDetail(@RequestBody HourDetail hourDetail) {
+        HourDetail createdHourDetail;
+        try {
+            createdHourDetail = hourDetailService.createHourDetail(hourDetail);
+        } catch (Throwable e) {
+            return ResponseEntity.badRequest().body(e.toString());
+        }
+        return ResponseEntity.ok(createdHourDetail);
     }
 
-    @GetMapping(path = "/{id}")
-    public ResponseEntity<HourDetail> getHourDetail(@PathVariable Long id) {
-        return ResponseEntity.of(hourDetailRepository.findById(id));
+    @GetMapping(path = "/{hourDetailId}")
+    public ResponseEntity<HourDetail> getHourDetail(@PathVariable Long hourDetailId) {
+        return ResponseEntity.of(hourDetailService.findById(hourDetailId));
     }
 
-    @PutMapping(path = "/{id}")
-    public ResponseEntity<Object> modifyHourDetailData(@RequestBody HourDetail hourDetail, @PathVariable Long id) {
-        Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
+    @PutMapping(path = "/{hourDetailId}")
+    public ResponseEntity<Object> modifyHourDetail(@RequestBody HourDetail hourDetail,
+            @PathVariable Long hourDetailId) {
+        Optional<HourDetail> hourDetailOptional = hourDetailService.findById(hourDetailId);
 
         if (!hourDetailOptional.isPresent()) {
             return ResponseEntity.notFound().build();
         }
 
-        if (!hourDetailService.verifyDates(hourDetail)) {
+        if (!hourDetailService.hasValidPeriod(hourDetail)) {
             return ResponseEntity.badRequest().body("Dates are not valid or overlaps with other hour details");
         }
 
-        hourDetail.setId(id);
+        hourDetail.setId(hourDetailId);
         return ResponseEntity.ok(hourDetailService.save(hourDetail));
     }
 
-    @DeleteMapping(path = "/{id}")
-    public void deleteHourDetail(@PathVariable Long id) {
-        hourDetailRepository.deleteById(id);
+    @DeleteMapping(path = "/{hourDetailId}")
+    public void deleteHourDetail(@PathVariable Long hourDetailId) {
+        hourDetailService.deleteById(hourDetailId);
     }
 
     @GetMapping(path = "/totalProjectHours/{projectId}")
