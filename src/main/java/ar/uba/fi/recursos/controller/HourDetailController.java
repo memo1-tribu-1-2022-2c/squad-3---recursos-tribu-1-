@@ -3,6 +3,7 @@ package ar.uba.fi.recursos.controller;
 import java.util.List;
 import java.util.Optional;
 
+import ar.uba.fi.recursos.exceptions.InvalidDatesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +43,8 @@ public class HourDetailController {
         HourDetail createdHourDetail;
         try {
             createdHourDetail = hourDetailService.createHourDetail(hourDetail);
-        } catch (Throwable e) {
-            return ResponseEntity.badRequest().body(e.toString());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok(createdHourDetail);
     }
@@ -58,12 +59,15 @@ public class HourDetailController {
             @PathVariable Long hourDetailId) {
         Optional<HourDetail> hourDetailOptional = hourDetailService.findById(hourDetailId);
 
-        if (!hourDetailOptional.isPresent()) {
+        if (hourDetailOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        if (!hourDetailService.hasValidPeriod(hourDetail)) {
-            return ResponseEntity.badRequest().body("Dates are not valid or overlaps with other hour details");
+        try {
+            hourDetailService.checkValidPeriod(hourDetail);
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
         hourDetail.setId(hourDetailId);

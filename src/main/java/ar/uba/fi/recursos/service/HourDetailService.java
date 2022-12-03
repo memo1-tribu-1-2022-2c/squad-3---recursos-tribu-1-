@@ -29,44 +29,34 @@ public class HourDetailService {
     @Autowired
     private ResourceService resourceService;
 
-    public HourDetail createHourDetail(HourDetail hourDetail) throws Throwable {
+    public HourDetail createHourDetail(HourDetail hourDetail) {
+        checkValidPeriod(hourDetail);
 
-        // fix: manejar errores sin tirar excepciones
-
-        if (!hasValidPeriod(hourDetail)) {
-            throw new InvalidDatesException("Las fechas del parte no son validas o se superponen con unas existentes");
-        }
-
-        if (!resourceService.findById(hourDetail.getWorkerId()).isPresent()) {
+        if (resourceService.findById(hourDetail.getWorkerId()).isEmpty()) {
             throw new InvalidTypeException("El recurso no existe");
         }
 
         hourDetail.setStatus(HourDetailStatus.DRAFT);
-        hourDetail.setTimeRegisters(new ArrayList<TimeRegister>());
+        hourDetail.setTimeRegisters(new ArrayList<>());
         return hourDetailRepository.save(hourDetail);
     }
 
-    public boolean hasValidPeriod(HourDetail hourDetail) {
+    public void checkValidPeriod(HourDetail hourDetail) {
         Date startDate = Date.from(hourDetail.getStartTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startDate);
 
         switch (hourDetail.getType()) {
-            case WEEKLY: {
+            case WEEKLY -> {
                 if (!((calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY))) {
-                    return false;
-                    // throw new InvalidDatesException("La fecha especificada no es un lunes: " +
-                    // startDate);
+                    throw new InvalidDatesException("La fecha especificada no es un lunes: " + startDate.getDate());
                 }
                 calendar.add(Calendar.DAY_OF_MONTH, 6);
                 hourDetail.setEndTime(calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                break;
             }
-            case BIWEEKLY: {
+            case BIWEEKLY -> {
                 if (!((calendar.get(Calendar.DAY_OF_MONTH) == 1)) && !((calendar.get(Calendar.DAY_OF_MONTH) == 16))) {
-                    return false;
-                    // throw new InvalidDatesException("La fecha especificada no es un 1 o 16 del
-                    // mes: " + startDate);
+                    throw new InvalidDatesException("La fecha especificada no es un 1 o 16 del mes: " + startDate.getDate());
                 }
 
                 if ((calendar.get(Calendar.DAY_OF_MONTH) == 1)) {
@@ -77,24 +67,18 @@ public class HourDetailService {
                 int max_day = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 calendar.set(Calendar.DAY_OF_MONTH, max_day);
                 hourDetail.setEndTime(calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                break;
             }
-            case MONTHLY: {
+            case MONTHLY -> {
 
                 if (!((calendar.get(Calendar.DAY_OF_MONTH) == 1))) {
-                    return false;
-                    // throw new InvalidDatesException("La fecha especificada no es el primer día
-                    // del mes: " + startDate);
+                    throw new InvalidDatesException("La fecha especificada no es el primer día del mes: " + startDate.getDate());
                 }
                 int max_day = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 calendar.set(Calendar.DAY_OF_MONTH, max_day);
                 hourDetail.setEndTime(calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                break;
             }
-            default: {
-                return false;
-                // throw new InvalidTypeException("El tipo especificado es inválido: " +
-                // hourDetail.getType());
+            default -> {
+                throw new InvalidTypeException("El tipo especificado es inválido: " + hourDetail.getType());
             }
         }
 
@@ -106,7 +90,6 @@ public class HourDetailService {
         // hd.getId());
         // }
         // });
-        return true;
     }
 
     public HourDetail save(HourDetail hourDetail) {
