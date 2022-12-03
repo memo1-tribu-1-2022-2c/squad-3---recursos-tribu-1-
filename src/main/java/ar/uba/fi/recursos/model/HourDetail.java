@@ -1,11 +1,24 @@
 package ar.uba.fi.recursos.model;
 
-import lombok.*;
-
-import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -19,22 +32,16 @@ public class HourDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    
     private Long workerId;
-
     private LocalDate startTime;
-    
     private LocalDate endTime;
-
     private HourDetailStatus status;
-
     private HourDetailType type;
 
     // @OneToMany(fetch = FetchType.LAZY, mappedBy = "hourDetailId")
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "hourDetailId")
     private List<TimeRegister> timeRegisters;
-    // Use of @OneToMany or @ManyToMany targeting an unmapped class: ar.uba.fi.recursos.model.HourDetail.timeRegistersIds[java.lang.Long]
 
     public void addTimeRegister(TimeRegister timeRegister) {
         timeRegisters.add(timeRegister);

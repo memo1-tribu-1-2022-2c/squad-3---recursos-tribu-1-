@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.BAD_REQUEST)
 public class InvalidHourDetailHoursException extends RuntimeException {
-    public InvalidHourDetailHoursException(String message){
+    public InvalidHourDetailHoursException(String message) {
         super(message);
     }
 }

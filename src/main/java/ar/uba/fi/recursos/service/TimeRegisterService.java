@@ -1,21 +1,19 @@
 package ar.uba.fi.recursos.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import ar.uba.fi.recursos.exceptions.InvalidHourDetailHoursException;
 import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.model.TimeRegisterTypeOfActivity;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-//import ar.uba.fi.recursos.repository.ConceptRepository;
 
 @Service
 public class TimeRegisterService {
 
     @Autowired
     private TimeRegisterRepository timeRegisterRepository;
-
-    // @Autowired
-    // private ConceptRepository conceptRepository;
+    // @Autowired private ConceptRepository conceptRepository;
 
     public TimeRegister createTimeRegister(TimeRegister timeRegister) {
         if (timeRegister.getHours() <= 0 && timeRegister.getHours() > 24) {

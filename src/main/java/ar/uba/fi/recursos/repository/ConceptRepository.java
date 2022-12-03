@@ -1,9 +1,11 @@
 package ar.uba.fi.recursos.repository;
 
-import ar.uba.fi.recursos.model.Concept;
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import java.util.List;
+
+import ar.uba.fi.recursos.model.Concept;
 
 @RepositoryRestResource
 public interface ConceptRepository extends CrudRepository<Concept, Long> {

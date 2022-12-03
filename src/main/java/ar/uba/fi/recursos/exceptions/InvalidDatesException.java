@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.BAD_REQUEST)
 public class InvalidDatesException extends RuntimeException {
-    public InvalidDatesException(String message){
+    public InvalidDatesException(String message) {
         super(message);
     }
 }
