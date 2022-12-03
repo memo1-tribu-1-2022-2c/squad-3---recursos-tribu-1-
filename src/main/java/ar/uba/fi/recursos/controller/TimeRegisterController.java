@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.TimeRegister;
-import ar.uba.fi.recursos.repository.TimeRegisterRepository;
 import ar.uba.fi.recursos.service.HourDetailService;
 import ar.uba.fi.recursos.service.TimeRegisterService;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -33,15 +32,13 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 public class TimeRegisterController {
 
     @Autowired
-    private TimeRegisterRepository timeRegisterRepository;
+    private TimeRegisterService timeRegisterService;
     @Autowired
     private HourDetailService hourDetailService;
-    @Autowired
-    private TimeRegisterService timeRegisterService;
 
     @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TimeRegister> getAllTimeRegisters() {
-        return this.timeRegisterRepository.findAll();
+        return timeRegisterService.findAll();
     }
 
     @PostMapping(path = "")
@@ -54,13 +51,13 @@ public class TimeRegisterController {
         }
 
         // check if activity is valid
-        if (!timeRegisterService.verifyActivity(timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
+        if (!timeRegisterService.isValidActivity(timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
             return ResponseEntity.badRequest().body("Activity is not valid for this hour detail");
         }
 
         HourDetail existingHourDetail = hourDetail.get();
 
-        if (timeRegisterRepository.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(timeRegister.getDate(),
+        if (timeRegisterService.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(timeRegister.getDate(),
                 timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
             return ResponseEntity.badRequest().body("Time Register with given date and activity already exists");
         }
@@ -75,7 +72,7 @@ public class TimeRegisterController {
     public ResponseEntity<Object> modifyTimeRegister(@RequestBody TimeRegister timeRegister,
             @PathVariable Long timeRegisterId) {
         // TODO checkeos
-        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(timeRegisterId);
+        Optional<TimeRegister> timeRegisterOptional = timeRegisterService.findById(timeRegisterId);
 
         if (!timeRegisterOptional.isPresent()) {
             return ResponseEntity.badRequest().body("Time Register with id " + timeRegisterId + " does not exist");
@@ -85,12 +82,12 @@ public class TimeRegisterController {
 
         // hay que chequear q sean validos los otros atributos del TimeRegister
 
-        return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
+        return ResponseEntity.ok(timeRegisterService.save(timeRegister));
     }
 
     @DeleteMapping(path = "/{timeRegisterId}")
     public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long timeRegisterId) {
-        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(timeRegisterId);
+        Optional<TimeRegister> timeRegisterOptional = timeRegisterService.findById(timeRegisterId);
 
         if (!timeRegisterOptional.isPresent()) {
             return ResponseEntity.badRequest().body("Time Register with id " + timeRegisterId + " does not exist");
@@ -109,7 +106,7 @@ public class TimeRegisterController {
         HourDetail hourDetail = hourDetailOptional.get();
         hourDetail.removeTimeRegister(existingTimeRegister);
         hourDetailService.save(hourDetail);
-        timeRegisterRepository.deleteById(timeRegisterId);
+        timeRegisterService.deleteById(timeRegisterId);
         return ResponseEntity.ok().build();
     }
 
@@ -117,7 +114,7 @@ public class TimeRegisterController {
     public List<TimeRegister> getTimeRegisterReport(@RequestParam Long workerId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate minDate,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate maxDate) {
-        return this.timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate,
+        return timeRegisterService.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate,
                 maxDate, workerId);
     }
 
