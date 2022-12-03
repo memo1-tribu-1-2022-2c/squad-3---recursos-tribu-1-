@@ -1,4 +1,4 @@
-package ar.uba.fi.recursos;
+package ar.uba.fi.recursos.exceptions;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -23,7 +23,6 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import ar.uba.fi.recursos.apierror.ApiError;
-import ar.uba.fi.recursos.exceptions.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
