@@ -1,10 +1,12 @@
 package ar.uba.fi.recursos.service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import ar.uba.fi.recursos.dtos.TaskData;
-import ar.uba.fi.recursos.exceptions.InvalidDatesException;
+import ar.uba.fi.recursos.exceptions.InvalidDateException;
 import ar.uba.fi.recursos.exceptions.InvalidTypeException;
 import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.HourDetailStatus;
@@ -42,40 +44,29 @@ public class HourDetailService {
     }
 
     public void checkValidPeriod(HourDetail hourDetail) {
-        Date startDate = Date.from(hourDetail.getStartTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startDate);
+        LocalDate startDate = hourDetail.getStartTime();
 
         switch (hourDetail.getType()) {
             case WEEKLY -> {
-                if (!((calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY))) {
-                    throw new InvalidDatesException("La fecha especificada no es un lunes: " + startDate.getDate());
+                if (startDate.getDayOfWeek() == DayOfWeek.MONDAY) {
+                    throw new InvalidDateException("La fecha especificada no es un lunes: " + startDate);
                 }
-                calendar.add(Calendar.DAY_OF_MONTH, 6);
-                hourDetail.setEndTime(calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                hourDetail.setEndTime(startDate.plusDays(6));
             }
             case BIWEEKLY -> {
-                if (!((calendar.get(Calendar.DAY_OF_MONTH) == 1)) && !((calendar.get(Calendar.DAY_OF_MONTH) == 16))) {
-                    throw new InvalidDatesException("La fecha especificada no es un 1 o 16 del mes: " + startDate.getDate());
+                if (startDate.getDayOfMonth() == 1) {
+                    hourDetail.setEndTime(startDate.plusDays(14));
+                } else if (startDate.getDayOfMonth() == 16) {
+                    hourDetail.setEndTime(YearMonth.from(startDate).atEndOfMonth());
+                } else {
+                    throw new InvalidDateException("La fecha especificada no es un 1 o 16 del mes: " + startDate);
                 }
-
-                if ((calendar.get(Calendar.DAY_OF_MONTH) == 1)) {
-                    calendar.add(Calendar.DAY_OF_MONTH, 14);
-                    hourDetail.setEndTime(calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                    break;
-                }
-                int max_day = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                calendar.set(Calendar.DAY_OF_MONTH, max_day);
-                hourDetail.setEndTime(calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
             }
             case MONTHLY -> {
-
-                if (!((calendar.get(Calendar.DAY_OF_MONTH) == 1))) {
-                    throw new InvalidDatesException("La fecha especificada no es el primer día del mes: " + startDate.getDate());
+                if (startDate.getDayOfMonth() != 1) {
+                    throw new InvalidDateException("La fecha especificada no es el primer día del mes: " + startDate);
                 }
-                int max_day = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                calendar.set(Calendar.DAY_OF_MONTH, max_day);
-                hourDetail.setEndTime(calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                hourDetail.setEndTime(YearMonth.from(startDate).atEndOfMonth());
             }
             default -> {
                 throw new InvalidTypeException("El tipo especificado es inválido: " + hourDetail.getType());

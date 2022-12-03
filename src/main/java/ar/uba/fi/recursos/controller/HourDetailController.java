@@ -3,7 +3,6 @@ package ar.uba.fi.recursos.controller;
 import java.util.List;
 import java.util.Optional;
 
-import ar.uba.fi.recursos.exceptions.InvalidDatesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
