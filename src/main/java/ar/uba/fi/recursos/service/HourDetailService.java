@@ -52,7 +52,7 @@ public class HourDetailService {
         calendar.setTime(startDate);
 
         switch (hourDetail.getType()) {
-            case SEMANAL: {
+            case WEEKLY: {
                 if (!((calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY))) {
                     return false;
                     // throw new InvalidDatesException("La fecha especificada no es un lunes: " +
@@ -62,7 +62,7 @@ public class HourDetailService {
                 hourDetail.setEndTime(calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                 break;
             }
-            case QUINCENAL: {
+            case BIWEEKLY: {
                 if (!((calendar.get(Calendar.DAY_OF_MONTH) == 1)) && !((calendar.get(Calendar.DAY_OF_MONTH) == 16))) {
                     return false;
                     // throw new InvalidDatesException("La fecha especificada no es un 1 o 16 del
@@ -79,7 +79,7 @@ public class HourDetailService {
                 hourDetail.setEndTime(calendar.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                 break;
             }
-            case MENSUAL: {
+            case MONTHLY: {
 
                 if (!((calendar.get(Calendar.DAY_OF_MONTH) == 1))) {
                     return false;
