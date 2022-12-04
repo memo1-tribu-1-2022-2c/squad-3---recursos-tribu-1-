@@ -216,17 +216,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
      * @param ex the Exception
      * @return the ApiError object
      */
-    // @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    // protected ResponseEntity<Object>
-    // handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex,
-    // WebRequest request) {
-    // ApiError apiError = new ApiError(BAD_REQUEST);
-    // apiError.setMessage(String.format("The parameter '%s' of value '%s' could not
-    // be converted to type '%s'",
-    // ex.getName(), ex.getValue(), ex.getRequiredType().getSimpleName()));
-    // apiError.setDebugMessage(ex.getMessage());
-    // return buildResponseEntity(apiError);
-    // }
+    @ExceptionHandler(RuntimeException.class)
+    protected ResponseEntity<Object> handleRuntimeException(RuntimeException ex, WebRequest request) {
+        ApiError apiError = new ApiError(BAD_REQUEST);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
 
     private ResponseEntity<Object> buildResponseEntity(ApiError apiError) {
         return new ResponseEntity<>(apiError, apiError.getStatus());
