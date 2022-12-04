@@ -43,6 +43,18 @@ public class HourDetailService {
         return hourDetailRepository.save(hourDetail);
     }
 
+    public HourDetail modifyHourDetail(HourDetail old, HourDetail hourDetail) {
+        hourDetail.setId(old.getId());
+
+        checkValidPeriod(hourDetail);
+
+        if (resourceService.findById(hourDetail.getWorkerId()).isEmpty()) {
+            throw new InvalidTypeException("El recurso no existe");
+        }
+
+        return hourDetailRepository.save(hourDetail);
+    }
+
     public void checkValidPeriod(HourDetail hourDetail) {
         LocalDate startDate = hourDetail.getStartTime();
 

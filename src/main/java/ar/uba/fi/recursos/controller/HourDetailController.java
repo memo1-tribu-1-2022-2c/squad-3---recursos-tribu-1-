@@ -62,15 +62,14 @@ public class HourDetailController {
             return ResponseEntity.notFound().build();
         }
 
+        HourDetail modifiedHourDetail;
         try {
-            hourDetailService.checkValidPeriod(hourDetail);
+            modifiedHourDetail = hourDetailService.modifyHourDetail(hourDetailOptional.get(), hourDetail);
         } catch (RuntimeException e) {
             System.err.println(e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        hourDetail.setId(hourDetailId);
-        return ResponseEntity.ok(hourDetailService.save(hourDetail));
+        return ResponseEntity.ok(modifiedHourDetail);
     }
 
     @DeleteMapping(path = "/{hourDetailId}")
