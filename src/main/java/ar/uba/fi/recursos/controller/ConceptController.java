@@ -1,7 +1,8 @@
 package ar.uba.fi.recursos.controller;
 
 import java.util.List;
-import java.util.Optional;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ar.uba.fi.recursos.model.Concept;
-import ar.uba.fi.recursos.model.ConceptStatus;
 import ar.uba.fi.recursos.service.ConceptService;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
@@ -39,43 +39,23 @@ public class ConceptController {
     }
 
     @PostMapping(path = "")
-    public ResponseEntity<Object> createConcept(@RequestBody Concept concept) {
-        if (conceptService.existsByName(concept.getName()))
-            return ResponseEntity.badRequest().body("A concept with the same name already exists");
+    public ResponseEntity<Concept> createConcept(@Valid @RequestBody Concept concept) {
         return ResponseEntity.ok(conceptService.createConcept(concept));
     }
 
     @GetMapping(path = "/{conceptId}")
     public ResponseEntity<Concept> getConcept(@PathVariable Long conceptId) {
-        return ResponseEntity.of(conceptService.findById(conceptId));
+        return ResponseEntity.ok(conceptService.findById(conceptId));
     }
 
     @PutMapping(path = "/{conceptId}")
-    public ResponseEntity<Object> modifyConcept(@RequestBody Concept concept, @PathVariable Long conceptId) {
-        Optional<Concept> conceptOptional = conceptService.findById(conceptId);
-
-        if (!conceptOptional.isPresent())
-            return ResponseEntity.notFound().build();
-
-        Concept existingConcept = conceptOptional.get();
-        if (!concept.getName().equals(existingConcept.getName()) && conceptService.existsByName(concept.getName()))
-            return ResponseEntity.badRequest().body("A different concept with the desired new name already exists");
-
-        concept.setId(conceptId);
-        return ResponseEntity.ok(conceptService.save(concept));
+    public ResponseEntity<Concept> modifyConcept(@RequestBody Concept concept, @PathVariable Long conceptId) {
+        return ResponseEntity.ok(conceptService.modifyConcept(conceptId, concept));
     }
 
     @DeleteMapping(path = "/{conceptId}")
-    public ResponseEntity<Object> deleteConcept(@PathVariable Long conceptId) {
-        Optional<Concept> conceptOptional = conceptService.findById(conceptId);
-
-        if (!conceptOptional.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Concept existingConcept = conceptOptional.get();
-        existingConcept.setStatus(ConceptStatus.UNAVAILABLE);
-        return ResponseEntity.ok(conceptService.save(existingConcept));
+    public ResponseEntity<Concept> deleteConcept(@PathVariable Long conceptId) {
+        return ResponseEntity.ok(conceptService.deleteConcept(conceptId));
     }
 }
 
