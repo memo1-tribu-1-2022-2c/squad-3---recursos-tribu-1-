@@ -3,13 +3,12 @@ package ar.uba.fi.recursos.service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
+import ar.uba.fi.recursos.exceptions.OverlappingDatesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -23,6 +22,8 @@ import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.model.TimeRegisterTypeOfActivity;
 import ar.uba.fi.recursos.repository.HourDetailRepository;
 
+import javax.transaction.Transactional;
+
 @Service
 public class HourDetailService {
 
@@ -33,6 +34,7 @@ public class HourDetailService {
 
     public HourDetail createHourDetail(HourDetail hourDetail) {
         checkValidPeriod(hourDetail);
+        checkOverlapping(hourDetail);
 
         if (resourceService.findById(hourDetail.getWorkerId()).isEmpty()) {
             throw new InvalidTypeException("El recurso no existe");
@@ -47,6 +49,7 @@ public class HourDetailService {
         hourDetail.setId(old.getId());
 
         checkValidPeriod(hourDetail);
+        checkOverlapping(hourDetail);
 
         if (resourceService.findById(hourDetail.getWorkerId()).isEmpty()) {
             throw new InvalidTypeException("El recurso no existe");
@@ -55,7 +58,7 @@ public class HourDetailService {
         return hourDetailRepository.save(hourDetail);
     }
 
-    public void checkValidPeriod(HourDetail hourDetail) {
+    protected void checkValidPeriod(HourDetail hourDetail) {
         LocalDate startDate = hourDetail.getStartTime();
 
         switch (hourDetail.getType()) {
@@ -84,15 +87,23 @@ public class HourDetailService {
                 throw new InvalidTypeException("El tipo especificado es inválido: " + hourDetail.getType());
             }
         }
+    }
 
-        // this.hourDetailRepository.findByWorkerId(hourDetail.getWorkerId()).stream().forEach(hd
-        // -> {
-        // if(hd.getStartTime().isBefore(hourDetail.getEndTime()) &&
-        // hd.getEndTime().isAfter(hourDetail.getStartTime())){ // si se solapan
-        // throw new OverlappingDatesException("Las horas se solapan con el parte: " +
-        // hd.getId());
-        // }
-        // });
+    @Transactional
+    protected void checkOverlapping(HourDetail hourDetail) {
+        List<String> overlapping = this.hourDetailRepository.findAllWithOverlappingDates(
+                hourDetail.getWorkerId(), hourDetail.getStartTime(), hourDetail.getEndTime()
+        ).stream().map(hd -> hd.getId().toString()).toList();
+
+        if (!overlapping.isEmpty()) {
+            String message = "Las horas se solapan con ";
+            if (overlapping.size() > 1) {
+                message += "los partes: ";
+            } else {
+                message += "el parte: ";
+            }
+            throw new OverlappingDatesException(message + String.join(", ", overlapping));
+        }
     }
 
     public HourDetail save(HourDetail hourDetail) {
@@ -129,7 +140,7 @@ public class HourDetailService {
     }
 
     public List<HourDetail> findByWorkerId(Long workerId) {
-        return hourDetailRepository.findByWorkerId(workerId);
+        return hourDetailRepository.findByWorkerIdOrderByStartTime(workerId);
     }
 
     public List<HourDetail> findAll() {
