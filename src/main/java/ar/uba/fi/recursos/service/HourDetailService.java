@@ -60,7 +60,7 @@ public class HourDetailService {
 
         switch (hourDetail.getType()) {
             case WEEKLY -> {
-                if (startDate.getDayOfWeek() == DayOfWeek.MONDAY) {
+                if (startDate.getDayOfWeek() != DayOfWeek.MONDAY) {
                     throw new InvalidDateException("La fecha especificada no es un lunes: " + startDate);
                 }
                 hourDetail.setEndTime(startDate.plusDays(6));
