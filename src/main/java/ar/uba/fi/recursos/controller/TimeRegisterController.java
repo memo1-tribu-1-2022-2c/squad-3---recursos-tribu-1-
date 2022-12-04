@@ -46,7 +46,7 @@ public class TimeRegisterController {
 
         Long hourDetailId = timeRegister.getHourDetailId();
         Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
-        if (!hourDetail.isPresent()) {
+        if (hourDetail.isEmpty()) {
             return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
         }
 
@@ -74,7 +74,7 @@ public class TimeRegisterController {
         // TODO checkeos
         Optional<TimeRegister> timeRegisterOptional = timeRegisterService.findById(timeRegisterId);
 
-        if (!timeRegisterOptional.isPresent()) {
+        if (timeRegisterOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Time Register with id " + timeRegisterId + " does not exist");
         }
 
@@ -89,7 +89,7 @@ public class TimeRegisterController {
     public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long timeRegisterId) {
         Optional<TimeRegister> timeRegisterOptional = timeRegisterService.findById(timeRegisterId);
 
-        if (!timeRegisterOptional.isPresent()) {
+        if (timeRegisterOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Time Register with id " + timeRegisterId + " does not exist");
         }
 
@@ -99,7 +99,7 @@ public class TimeRegisterController {
         Long hourDetailId = existingTimeRegister.getHourDetailId();
         Optional<HourDetail> hourDetailOptional = hourDetailService.findById(hourDetailId);
 
-        if (!hourDetailOptional.isPresent()) {
+        if (hourDetailOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Hour detail with id " + hourDetailId + "does not exist");
         }
 

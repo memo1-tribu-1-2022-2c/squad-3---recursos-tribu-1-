@@ -150,4 +150,8 @@ public class HourDetailService {
     public void deleteById(Long id) {
         hourDetailRepository.deleteById(id);
     }
+
+    public Optional<List<TimeRegister>> findTimeRegisters(Long hourDetailId) {
+        return hourDetailRepository.findById(hourDetailId).map(HourDetail::getTimeRegisters);
+    }
 }

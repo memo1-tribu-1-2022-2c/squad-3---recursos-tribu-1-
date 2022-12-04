@@ -3,6 +3,7 @@ package ar.uba.fi.recursos.controller;
 import java.util.List;
 import java.util.Optional;
 
+import ar.uba.fi.recursos.model.TimeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +52,11 @@ public class HourDetailController {
     @GetMapping(path = "/{hourDetailId}")
     public ResponseEntity<HourDetail> getHourDetail(@PathVariable Long hourDetailId) {
         return ResponseEntity.of(hourDetailService.findById(hourDetailId));
+    }
+
+    @GetMapping(path = "/{hourDetailId}/timeRegisters")
+    public ResponseEntity<List<TimeRegister>> getTimeRegistersFromHourDetail(@PathVariable Long hourDetailId) {
+        return ResponseEntity.of(hourDetailService.findTimeRegisters(hourDetailId));
     }
 
     @PutMapping(path = "/{hourDetailId}")
