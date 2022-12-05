@@ -23,6 +23,8 @@ import java.util.Optional;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -36,31 +38,30 @@ public class HourDetailService {
     @Autowired
     private ResourceService resourceService;
 
-    public HourDetail createHourDetail(HourDetail hourDetail) throws Throwable {
-        
-
-        if(!verifyDates(hourDetail)) {
-            throw new InvalidDatesException("Las fechas del parte no son validas o se superponen con unas existentes");
+    public ResponseEntity<Object> createHourDetail(HourDetail hourDetail){
+        ResponseEntity<Object> response = verifyDates(hourDetail);
+        if(response.getStatusCode() != HttpStatus.OK ){
+            return response;
         }
         
         if(!resourceService.findById(hourDetail.getWorkerId()).isPresent()) {
-            throw new InvalidTypeException("El recurso no existe");
+            return ResponseEntity.badRequest().body("El id de empleado ingresado no existe");
         }
-
+        
         hourDetail.setStatus(HourDetailStatus.BORRADOR);
         hourDetail.setTimeRegisters(new ArrayList<TimeRegister>());
-        return hourDetailRepository.save(hourDetail);
+        hourDetailRepository.save(hourDetail);
+        return ResponseEntity.ok().build();
     }
 
-    public boolean verifyDates(HourDetail hourDetail) {
+    public ResponseEntity<Object> verifyDates(HourDetail hourDetail) {
         Date startDate = Date.from(hourDetail.getStartTime().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Calendar cal = Calendar.getInstance();
         cal.setTime(startDate);
         switch (hourDetail.getType()){
             case SEMANAL: {
                 if(!((cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY))){
-                    return false;
-                    // throw new InvalidDatesException("La fecha especificada no es un lunes: " + startDate);
+                    return ResponseEntity.badRequest().body("La fecha especificada no es un lunes: " + startDate);
                 }
                 cal.add(Calendar.DAY_OF_MONTH, 6);
                 hourDetail.setEndTime(cal.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
@@ -68,8 +69,7 @@ public class HourDetailService {
             }
             case QUINCENAL: {
                 if(!((cal.get(Calendar.DAY_OF_MONTH) == 1)) && !((cal.get(Calendar.DAY_OF_MONTH) == 16))){
-                    return false;
-                    // throw new InvalidDatesException("La fecha especificada no es un 1 o 16 del mes: " + startDate);
+                    return ResponseEntity.badRequest().body("La fecha especificada no es un 1 o 16 del mes: " + startDate);
                 }
 
                 if((cal.get(Calendar.DAY_OF_MONTH) == 1)){
@@ -85,8 +85,7 @@ public class HourDetailService {
             case MENSUAL: {
 
                 if(!((cal.get(Calendar.DAY_OF_MONTH) == 1))){
-                    return false;
-                    // throw new InvalidDatesException("La fecha especificada no es el primer día del mes: " + startDate);
+                    return ResponseEntity.badRequest().body("La fecha especificada no es el primer día del mes: " + startDate);
                 }
                 int max_day = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
                 cal.set(Calendar.DAY_OF_MONTH, max_day);
@@ -94,17 +93,19 @@ public class HourDetailService {
                 break;
             }
             default: {
-                return false;
-                // throw new InvalidTypeException("El tipo especificado es inválido: " + hourDetail.getType());
+                return ResponseEntity.badRequest().body("El tipo especificado es inválido: " + hourDetail.getType());
             }
         }
 
-        // this.hourDetailRepository.findByWorkerId(hourDetail.getWorkerId()).stream().forEach(hd -> {
-        //     if(hd.getStartTime().isBefore(hourDetail.getEndTime()) && hd.getEndTime().isAfter(hourDetail.getStartTime())){ // si se solapan
-        //         throw new OverlappingDatesException("Las horas se solapan con el parte: " + hd.getId());
-        //     }
-        // });
-        return true;
+        // check dates overlap
+        List<HourDetail> hourDetails = hourDetailRepository.findByWorkerId(hourDetail.getWorkerId());
+        for(HourDetail hd : hourDetails){
+            if(hd.getStartTime().isBefore(hourDetail.getEndTime()) && hd.getEndTime().isAfter(hourDetail.getStartTime())){
+                return ResponseEntity.badRequest().body("El parte se superpone con uno existente");
+            }
+        }
+
+        return ResponseEntity.ok().build();
     }
 
     public HourDetail save(HourDetail hourDetail) {

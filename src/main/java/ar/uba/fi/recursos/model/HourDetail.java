@@ -30,11 +30,9 @@ public class HourDetail {
 
     private HourDetailType type;
 
-    // @OneToMany(fetch = FetchType.LAZY, mappedBy = "hourDetailId")
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "hourDetailId")
     private List<TimeRegister> timeRegisters;
-    // Use of @OneToMany or @ManyToMany targeting an unmapped class: ar.uba.fi.recursos.model.HourDetail.timeRegistersIds[java.lang.Long]
 
     public void addTimeRegister(TimeRegister timeRegister) {
         timeRegisters.add(timeRegister);

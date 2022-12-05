@@ -7,6 +7,7 @@ import ar.uba.fi.recursos.model.TimeRegisterTypeOfActivity;
 import ar.uba.fi.recursos.repository.ConceptRepository;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,35 +20,37 @@ public class TimeRegisterService {
     @Autowired
     private ConceptRepository conceptRepository;
 
-    public TimeRegister createTimeRegister(TimeRegister timeRegister) {
+    public boolean verifyActivity(Long activityId, TimeRegisterTypeOfActivity typeOfActivity) {
+        if(typeOfActivity == TimeRegisterTypeOfActivity.TASK){
+            String url = "https://squad2-2022-2c.herokuapp.com/api/v1/tasks/" + activityId;
+            RestTemplate restTemplate = new RestTemplate();
+            TaskData task_raw = restTemplate.getForObject(url, TaskData.class);
+            if (task_raw == null) {
+                return false;
+            }
+            return true;
+
+        } else if(typeOfActivity == TimeRegisterTypeOfActivity.CONCEPT){
+            if(conceptRepository.findById(activityId).isEmpty()) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public ResponseEntity<Object> verifyTimeRegister(TimeRegister timeRegister) {
         if(timeRegister.getHours()<=0 && timeRegister.getHours()>24){
-            throw new InvalidHourDetailHoursException("Las horas del parte no pueden ser negativas o mayores a 24: " + timeRegister.getHours());
+            return ResponseEntity.badRequest().body("Las horas del parte no pueden ser negativas o mayores a 24: " + timeRegister.getHours());
+        }
+        if (!verifyActivity(timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
+            return ResponseEntity.badRequest().body("Activity is not valid for this hour detail");
         }
 
-        return timeRegisterRepository.save(timeRegister);
-    }
-
-    public TimeRegister save(TimeRegister timeRegister) {
-        return timeRegisterRepository.save(timeRegister);
-    }
-
-    public boolean verifyActivity(Long activityId, TimeRegisterTypeOfActivity typeOfActivity) {
-        // if(typeOfActivity == TimeRegisterTypeOfActivity.TASK){
-        //     String url = "https://squad2-2022-2c.herokuapp.com/api/v1/tasks/" + activityId;
-        //     RestTemplate restTemplate = new RestTemplate();
-        //     TaskData task_raw = restTemplate.getForObject(url, TaskData.class);
-        //     if (task_raw == null) {
-        //         return false;
-        //     }
-        //     return true;
-
-        // } else if(typeOfActivity == TimeRegisterTypeOfActivity.CONCEPT){
-        //     if(conceptRepository.findById(activityId).isEmpty()) {
-        //         return false;
-        //     }
-        //     return true;
-        // }
-        // return false;
-        return true;
+        
+        if (timeRegisterRepository.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(timeRegister.getDate(), timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
+            return ResponseEntity.badRequest().body("Time Register with given date and activity already exists");
+        }
+        return ResponseEntity.ok().build();
     }
 }

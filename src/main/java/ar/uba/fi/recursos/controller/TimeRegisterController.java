@@ -8,6 +8,7 @@ import ar.uba.fi.recursos.service.TimeRegisterService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -53,17 +54,12 @@ public class TimeRegisterController {
             return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
         }
 
-        // check if activity is valid
-        if (!timeRegisterService.verifyActivity(timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
-            return ResponseEntity.badRequest().body("Activity is not valid for this hour detail");
+        ResponseEntity<Object> isError = timeRegisterService.verifyTimeRegister(timeRegister);
+        if (isError.getStatusCode() != HttpStatus.OK) {
+            return isError;
         }
-
+        
         HourDetail existingHourDetail = hourDetail.get();
-
-        if (timeRegisterRepository.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(timeRegister.getDate(), timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
-            return ResponseEntity.badRequest().body("Time Register with given date and activity already exists");
-        }
-
         existingHourDetail.addTimeRegister(timeRegister);
         hourDetailService.save(existingHourDetail);
 
@@ -72,17 +68,18 @@ public class TimeRegisterController {
 
     @PutMapping(path = "/{id}")
     public ResponseEntity<Object> modifyTimeRegisterData(@RequestBody TimeRegister timeRegister, @PathVariable Long id){
-        // TODO checkeos
         Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(id);
 
         if (!timeRegisterOptional.isPresent()) {
             return ResponseEntity.badRequest().body("Time Register with id "+ id+ " does not exist");
         }
 
+        ResponseEntity<Object> isError = timeRegisterService.verifyTimeRegister(timeRegister);
+        if (isError.getStatusCode() != HttpStatus.OK) {
+            return isError;
+        }
+
         timeRegister.setId(id);
-
-        //hay que chequear q sean validos los otros atributos del TimeRegister
-
         return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
     }
 

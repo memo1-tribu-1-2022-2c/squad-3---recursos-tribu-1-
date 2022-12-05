@@ -6,6 +6,7 @@ import ar.uba.fi.recursos.repository.HourDetailRepository;
 import ar.uba.fi.recursos.service.HourDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -37,7 +38,7 @@ public class HourDetailController {
     }
 
     @PostMapping(path = "")
-    public HourDetail createHourDetail(@RequestBody HourDetail hourDetail) throws Throwable{
+    public ResponseEntity<Object> createHourDetail(@RequestBody HourDetail hourDetail){
         return hourDetailService.createHourDetail(hourDetail);
     }
 
@@ -54,8 +55,9 @@ public class HourDetailController {
             return ResponseEntity.notFound().build();
         }
 
-        if (!hourDetailService.verifyDates(hourDetail)) {
-            return ResponseEntity.badRequest().body("Dates are not valid or overlaps with other hour details");
+        ResponseEntity<Object> response = hourDetailService.verifyDates(hourDetail);
+        if (response.getStatusCode() != HttpStatus.OK) {
+            return response;
         }
 
         hourDetail.setId(id);
