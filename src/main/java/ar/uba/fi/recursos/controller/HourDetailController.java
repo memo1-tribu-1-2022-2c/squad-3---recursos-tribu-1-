@@ -1,89 +1,99 @@
 package ar.uba.fi.recursos.controller;
 
-import ar.uba.fi.recursos.model.HourDetail;
-import ar.uba.fi.recursos.model.TimeRegister;
-import ar.uba.fi.recursos.repository.HourDetailRepository;
-import ar.uba.fi.recursos.service.HourDetailService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-
 import java.util.List;
 import java.util.Optional;
 
+import ar.uba.fi.recursos.model.TimeRegister;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import ar.uba.fi.recursos.model.HourDetail;
+import ar.uba.fi.recursos.service.HourDetailService;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 @Validated
 @RestController
-@RequestMapping(path = "/hourDetail")
+@RequestMapping(path = "/hourDetails")
 @EnableSwagger2
 public class HourDetailController {
 
     @Autowired
     private HourDetailService hourDetailService;
 
-    @Autowired
-    private HourDetailRepository hourDetailRepository;
-    
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)	
-    public List<HourDetail> getAllHourDetails(@RequestParam(required = false) Long workerId) {
-        if (workerId != null) {
-            return this.hourDetailRepository.findByWorkerId(workerId);
-        }
-        return this.hourDetailRepository.findAll();
+    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<HourDetail>> getAllHourDetails(@RequestParam(required = false) Long workerId) {
+        if (workerId != null)
+            return ResponseEntity.ok(hourDetailService.findByWorkerId(workerId));
+        return ResponseEntity.ok(hourDetailService.findAll());
     }
 
     @PostMapping(path = "")
-    public HourDetail createHourDetail(@RequestBody HourDetail hourDetail) throws Throwable{
-        return hourDetailService.createHourDetail(hourDetail);
+    public ResponseEntity<Object> createHourDetail(@RequestBody HourDetail hourDetail) {
+        HourDetail createdHourDetail;
+        try {
+            createdHourDetail = hourDetailService.createHourDetail(hourDetail);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        return ResponseEntity.ok(createdHourDetail);
     }
 
-    @GetMapping(path = "/{id}")
-    public ResponseEntity<HourDetail> getHourDetail(@PathVariable Long id) {
-        return ResponseEntity.of(hourDetailRepository.findById(id));
+    @GetMapping(path = "/{hourDetailId}")
+    public ResponseEntity<HourDetail> getHourDetail(@PathVariable Long hourDetailId) {
+        return ResponseEntity.of(hourDetailService.findById(hourDetailId));
     }
 
-    @PutMapping(path = "/{id}")
-    public ResponseEntity<Object> modifyHourDetailData(@RequestBody HourDetail hourDetail, @PathVariable Long id){
-        Optional<HourDetail> hourDetailOptional = hourDetailRepository.findById(id);
+    @GetMapping(path = "/{hourDetailId}/timeRegisters")
+    public ResponseEntity<List<TimeRegister>> getTimeRegistersFromHourDetail(@PathVariable Long hourDetailId) {
+        return ResponseEntity.of(hourDetailService.findTimeRegisters(hourDetailId));
+    }
 
-        if (!hourDetailOptional.isPresent()) {
+    @PutMapping(path = "/{hourDetailId}")
+    public ResponseEntity<Object> modifyHourDetail(@RequestBody HourDetail hourDetail,
+            @PathVariable Long hourDetailId) {
+        Optional<HourDetail> hourDetailOptional = hourDetailService.findById(hourDetailId);
+
+        if (hourDetailOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        if (!hourDetailService.verifyDates(hourDetail)) {
-            return ResponseEntity.badRequest().body("Dates are not valid or overlaps with other hour details");
+        HourDetail modifiedHourDetail;
+        try {
+            modifiedHourDetail = hourDetailService.modifyHourDetail(hourDetailOptional.get(), hourDetail);
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        hourDetail.setId(id);
-        return ResponseEntity.ok(hourDetailService.save(hourDetail));
+        return ResponseEntity.ok(modifiedHourDetail);
     }
 
-
-    @DeleteMapping(path = "/{id}")
-    public void deleteHourDetail(@PathVariable Long id) {
-        hourDetailRepository.deleteById(id);
+    @DeleteMapping(path = "/{hourDetailId}")
+    public void deleteHourDetail(@PathVariable Long hourDetailId) {
+        hourDetailService.deleteById(hourDetailId);
     }
-
 
     @GetMapping(path = "/totalProjectHours/{projectId}")
     public ResponseEntity<Double> getTotalProjectHours(@PathVariable Long projectId) {
         return ResponseEntity.ok(hourDetailService.getTotalProjectHours(projectId));
     }
-    
+
 }
-
-
-
-
 
 // hourDetail
 // {
-//     "workerId": 1,
-//     "startTime":"2017-01-19", 
-//     "endTime":"2018-01-19",
-//     "status":"BORRADOR",
+// "workerId": 1,
+// "startTime":"2017-01-19",
+// "endTime":"2018-01-19",
+// "status":"BORRADOR",
 // }

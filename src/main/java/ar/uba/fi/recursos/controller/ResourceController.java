@@ -1,14 +1,15 @@
 package ar.uba.fi.recursos.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import ar.uba.fi.recursos.model.Resource;
 import ar.uba.fi.recursos.service.ResourceService;
@@ -16,10 +17,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Validated
 @RestController
-@EnableSwagger2
 @RequestMapping(path = "/resources")
+@EnableSwagger2
 public class ResourceController {
-    
+
     @Autowired
     private ResourceService resourceService;
 
@@ -28,8 +29,8 @@ public class ResourceController {
         return ResponseEntity.ok(resourceService.getAllResources());
     }
 
-    @GetMapping(path = "/{id}")
-    public ResponseEntity<Resource> getResourceById(@PathVariable Long id) {
-        return ResponseEntity.of(resourceService.findById(id));
+    @GetMapping(path = "/{resourceId}")
+    public ResponseEntity<Resource> getResource(@PathVariable Long resourceId) {
+        return ResponseEntity.of(resourceService.findById(resourceId));
     }
 }
