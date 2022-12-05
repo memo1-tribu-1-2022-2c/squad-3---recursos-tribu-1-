@@ -38,7 +38,6 @@ public class HourDetail {
     private HourDetailStatus status;
     private HourDetailType type;
 
-    // @OneToMany(fetch = FetchType.LAZY, mappedBy = "hourDetailId")
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "hourDetailId")
     private List<TimeRegister> timeRegisters;

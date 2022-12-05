@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import ar.uba.fi.recursos.model.TimeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -39,14 +41,8 @@ public class HourDetailController {
     }
 
     @PostMapping(path = "")
-    public ResponseEntity<Object> createHourDetail(@RequestBody HourDetail hourDetail) {
-        HourDetail createdHourDetail;
-        try {
-            createdHourDetail = hourDetailService.createHourDetail(hourDetail);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        return ResponseEntity.ok(createdHourDetail);
+    public ResponseEntity<Object> createHourDetail(@RequestBody HourDetail hourDetail){
+        return hourDetailService.createHourDetail(hourDetail);
     }
 
     @GetMapping(path = "/{hourDetailId}")
@@ -68,12 +64,9 @@ public class HourDetailController {
             return ResponseEntity.notFound().build();
         }
 
-        HourDetail modifiedHourDetail;
-        try {
-            modifiedHourDetail = hourDetailService.modifyHourDetail(hourDetailOptional.get(), hourDetail);
-        } catch (RuntimeException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
+        ResponseEntity<Object> response = hourDetailService.verifyDates(hourDetail);
+        if (response.getStatusCode() != HttpStatus.OK) {
+            return response;
         }
         return ResponseEntity.ok(modifiedHourDetail);
     }

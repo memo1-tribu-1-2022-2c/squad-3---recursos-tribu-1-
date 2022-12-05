@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -50,18 +51,12 @@ public class TimeRegisterController {
             return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
         }
 
-        // check if activity is valid
-        if (!timeRegisterService.isValidActivity(timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
-            return ResponseEntity.badRequest().body("Activity is not valid for this hour detail");
+        ResponseEntity<Object> isError = timeRegisterService.verifyTimeRegister(timeRegister);
+        if (isError.getStatusCode() != HttpStatus.OK) {
+            return isError;
         }
-
+        
         HourDetail existingHourDetail = hourDetail.get();
-
-        if (timeRegisterService.existsTimeRegisterByDateAndActivityIdAndTypeOfActivity(timeRegister.getDate(),
-                timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
-            return ResponseEntity.badRequest().body("Time Register with given date and activity already exists");
-        }
-
         existingHourDetail.addTimeRegister(timeRegister);
         hourDetailService.save(existingHourDetail);
 
@@ -69,20 +64,21 @@ public class TimeRegisterController {
     }
 
     @PutMapping(path = "/{timeRegisterId}")
-    public ResponseEntity<Object> modifyTimeRegister(@RequestBody TimeRegister timeRegister,
-            @PathVariable Long timeRegisterId) {
-        // TODO checkeos
-        Optional<TimeRegister> timeRegisterOptional = timeRegisterService.findById(timeRegisterId);
+    public ResponseEntity<Object> modifyTimeRegisterData(@RequestBody TimeRegister timeRegister, @PathVariable Long timeRegisterId){
+        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(timeRegisterId);
 
         if (timeRegisterOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Time Register with id " + timeRegisterId + " does not exist");
         }
 
-        timeRegister.setId(timeRegisterId);
+        ResponseEntity<Object> isError = timeRegisterService.verifyTimeRegister(timeRegister);
+        if (isError.getStatusCode() != HttpStatus.OK) {
+            return isError;
+        }
 
-        // hay que chequear q sean validos los otros atributos del TimeRegister
+        timeRegister.setId(id);
+        return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
 
-        return ResponseEntity.ok(timeRegisterService.save(timeRegister));
     }
 
     @DeleteMapping(path = "/{timeRegisterId}")

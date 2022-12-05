@@ -10,6 +10,8 @@ import java.util.Optional;
 
 import ar.uba.fi.recursos.exceptions.OverlappingDatesException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -32,62 +34,57 @@ public class HourDetailService {
     @Autowired
     private ResourceService resourceService;
 
-    public HourDetail createHourDetail(HourDetail hourDetail) {
-        checkValidPeriod(hourDetail);
-        checkOverlapping(hourDetail);
 
-        if (resourceService.findById(hourDetail.getWorkerId()).isEmpty()) {
-            throw new InvalidTypeException("El recurso no existe");
+    public ResponseEntity<Object> createHourDetail(HourDetail hourDetail){
+        ResponseEntity<Object> response = verifyDates(hourDetail);
+        if(response.getStatusCode() != HttpStatus.OK ){
+            return response;
         }
-
+        
+        if(!resourceService.findById(hourDetail.getWorkerId()).isPresent()) {
+            return ResponseEntity.badRequest().body("El id de empleado ingresado no existe");
+        }
+        
         hourDetail.setStatus(HourDetailStatus.DRAFT);
         hourDetail.setTimeRegisters(new ArrayList<>());
-        return hourDetailRepository.save(hourDetail);
+        hourDetailRepository.save(hourDetail);
+        return ResponseEntity.ok().build();
     }
 
-    public HourDetail modifyHourDetail(HourDetail old, HourDetail hourDetail) {
-        hourDetail.setId(old.getId());
-
-        checkValidPeriod(hourDetail);
-        checkOverlapping(hourDetail);
-
-        if (resourceService.findById(hourDetail.getWorkerId()).isEmpty()) {
-            throw new InvalidTypeException("El recurso no existe");
-        }
-
-        return hourDetailRepository.save(hourDetail);
-    }
-
-    protected void checkValidPeriod(HourDetail hourDetail) {
+    protected ResponseEntity<Object> checkValidPeriod(HourDetail hourDetail) {
         LocalDate startDate = hourDetail.getStartTime();
 
         switch (hourDetail.getType()) {
             case WEEKLY -> {
                 if (startDate.getDayOfWeek() != DayOfWeek.MONDAY) {
-                    throw new InvalidDateException("La fecha especificada no es un lunes: " + startDate);
+                    return ResponseEntity.badRequest().body("La fecha especificada no es un lunes: " + startDate);
                 }
                 hourDetail.setEndTime(startDate.plusDays(6));
             }
+
             case BIWEEKLY -> {
                 if (startDate.getDayOfMonth() == 1) {
                     hourDetail.setEndTime(startDate.plusDays(14));
                 } else if (startDate.getDayOfMonth() == 16) {
                     hourDetail.setEndTime(YearMonth.from(startDate).atEndOfMonth());
                 } else {
-                    throw new InvalidDateException("La fecha especificada no es un 1 o 16 del mes: " + startDate);
+                    return ResponseEntity.badRequest().body("La fecha especificada no es un 1 o 16 del mes: " + startDate);
                 }
             }
             case MONTHLY -> {
                 if (startDate.getDayOfMonth() != 1) {
-                    throw new InvalidDateException("La fecha especificada no es el primer día del mes: " + startDate);
+                    return ResponseEntity.badRequest().body("La fecha especificada no es el primer día del mes: " + startDate);
                 }
                 hourDetail.setEndTime(YearMonth.from(startDate).atEndOfMonth());
             }
-            default -> {
-                throw new InvalidTypeException("El tipo especificado es inválido: " + hourDetail.getType());
+
+            default: {
+                return ResponseEntity.badRequest().body("El tipo especificado es inválido: " + hourDetail.getType());
             }
         }
+        return ResponseEntity.ok().build();
     }
+        
 
     @Transactional
     protected void checkOverlapping(HourDetail hourDetail) {
