@@ -64,11 +64,11 @@ public class HourDetailController {
             return ResponseEntity.notFound().build();
         }
 
-        ResponseEntity<Object> response = hourDetailService.verifyDates(hourDetail);
+        ResponseEntity<Object> response = hourDetailService.checkValidPeriod(hourDetail);
         if (response.getStatusCode() != HttpStatus.OK) {
             return response;
         }
-        return ResponseEntity.ok(modifiedHourDetail);
+        return ResponseEntity.ok(hourDetail);
     }
 
     @DeleteMapping(path = "/{hourDetailId}")

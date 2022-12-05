@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import ar.uba.fi.recursos.dtos.TaskData;
-import ar.uba.fi.recursos.exceptions.InvalidDateException;
-import ar.uba.fi.recursos.exceptions.InvalidTypeException;
 import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.HourDetailStatus;
 import ar.uba.fi.recursos.model.TimeRegister;
@@ -36,7 +34,7 @@ public class HourDetailService {
 
 
     public ResponseEntity<Object> createHourDetail(HourDetail hourDetail){
-        ResponseEntity<Object> response = verifyDates(hourDetail);
+        ResponseEntity<Object> response = checkValidPeriod(hourDetail);
         if(response.getStatusCode() != HttpStatus.OK ){
             return response;
         }
@@ -51,7 +49,7 @@ public class HourDetailService {
         return ResponseEntity.ok().build();
     }
 
-    protected ResponseEntity<Object> checkValidPeriod(HourDetail hourDetail) {
+    public ResponseEntity<Object> checkValidPeriod(HourDetail hourDetail) {
         LocalDate startDate = hourDetail.getStartTime();
 
         switch (hourDetail.getType()) {
@@ -78,13 +76,21 @@ public class HourDetailService {
                 hourDetail.setEndTime(YearMonth.from(startDate).atEndOfMonth());
             }
 
-            default: {
+            default -> {
                 return ResponseEntity.badRequest().body("El tipo especificado es inválido: " + hourDetail.getType());
             }
         }
+
+        // Check if there is an overlapping hour detail
+        try {
+            checkOverlapping(hourDetail);
+        } catch (OverlappingDatesException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
         return ResponseEntity.ok().build();
     }
-        
+
 
     @Transactional
     protected void checkOverlapping(HourDetail hourDetail) {

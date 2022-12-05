@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.TimeRegister;
+import ar.uba.fi.recursos.repository.TimeRegisterRepository;
 import ar.uba.fi.recursos.service.HourDetailService;
 import ar.uba.fi.recursos.service.TimeRegisterService;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -36,6 +37,9 @@ public class TimeRegisterController {
     private TimeRegisterService timeRegisterService;
     @Autowired
     private HourDetailService hourDetailService;
+
+    @Autowired
+    private TimeRegisterRepository timeRegisterRepository;
 
     @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<TimeRegister> getAllTimeRegisters() {
@@ -76,7 +80,7 @@ public class TimeRegisterController {
             return isError;
         }
 
-        timeRegister.setId(id);
+        timeRegister.setId(timeRegisterId);
         return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
 
     }

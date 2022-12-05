@@ -7,9 +7,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import ar.uba.fi.recursos.dtos.TaskData;
 import ar.uba.fi.recursos.exceptions.InvalidHourDetailHoursException;
 import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.model.TimeRegisterTypeOfActivity;
+import ar.uba.fi.recursos.repository.ConceptRepository;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,8 @@ public class TimeRegisterService {
 
     @Autowired
     private TimeRegisterRepository timeRegisterRepository;
-    // @Autowired private ConceptRepository conceptRepository;
+    @Autowired 
+    private ConceptRepository conceptRepository;
 
     public boolean verifyActivity(Long activityId, TimeRegisterTypeOfActivity typeOfActivity) {
         if(typeOfActivity == TimeRegisterTypeOfActivity.TASK){
