@@ -48,14 +48,13 @@ public class TimeRegisterController {
 
     @PostMapping(path = "")
     public ResponseEntity<Object> createTimeRegister(@RequestBody TimeRegister timeRegister) {
-
         Long hourDetailId = timeRegister.getHourDetailId();
         Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
         if (hourDetail.isEmpty()) {
             return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
         }
+        ResponseEntity<Object> isError = timeRegisterService.verifyNewTimeRegister(timeRegister);
 
-        ResponseEntity<Object> isError = timeRegisterService.verifyTimeRegister(timeRegister);
         if (isError.getStatusCode() != HttpStatus.OK) {
             return isError;
         }
