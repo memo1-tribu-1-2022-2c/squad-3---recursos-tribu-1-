@@ -58,8 +58,20 @@ public class TimeRegisterController {
         if (isError.getStatusCode() != HttpStatus.OK) {
             return isError;
         }
-        
+
         HourDetail existingHourDetail = hourDetail.get();
+
+        // chequear que la fecha del registro este dentro del periodo del parte asociado
+        LocalDate timeRegisterDate = timeRegister.getDate();
+        LocalDate hourDetailStartDate = existingHourDetail.getStartTime();
+        LocalDate hourDetailEndDate = existingHourDetail.getEndTime();
+
+        if (timeRegisterDate.isAfter(hourDetailEndDate) || timeRegisterDate.isBefore(hourDetailStartDate)) {
+            return ResponseEntity.badRequest()
+                    .body(String.format("La fecha indicada para el registro no está dentro del período %s - %s",
+                            hourDetailStartDate.toString(), hourDetailEndDate.toString()));
+        }
+
         existingHourDetail.addTimeRegister(timeRegister);
         hourDetailService.save(existingHourDetail);
 
@@ -67,7 +79,8 @@ public class TimeRegisterController {
     }
 
     @PutMapping(path = "/{timeRegisterId}")
-    public ResponseEntity<Object> modifyTimeRegisterData(@RequestBody TimeRegister timeRegister, @PathVariable Long timeRegisterId){
+    public ResponseEntity<Object> modifyTimeRegisterData(@RequestBody TimeRegister timeRegister,
+            @PathVariable Long timeRegisterId) {
         Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(timeRegisterId);
 
         if (timeRegisterOptional.isEmpty()) {
@@ -77,6 +90,25 @@ public class TimeRegisterController {
         ResponseEntity<Object> isError = timeRegisterService.verifyTimeRegister(timeRegister);
         if (isError.getStatusCode() != HttpStatus.OK) {
             return isError;
+        }
+
+        Long hourDetailId = timeRegister.getHourDetailId();
+        Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
+        if (hourDetail.isEmpty()) {
+            return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
+        }
+
+        HourDetail existingHourDetail = hourDetail.get();
+
+        // chequear que la fecha del registro este dentro del periodo del parte asociado
+        LocalDate timeRegisterDate = timeRegister.getDate();
+        LocalDate hourDetailStartDate = existingHourDetail.getStartTime();
+        LocalDate hourDetailEndDate = existingHourDetail.getEndTime();
+
+        if (timeRegisterDate.isAfter(hourDetailEndDate) || timeRegisterDate.isBefore(hourDetailStartDate)) {
+            return ResponseEntity.badRequest()
+                    .body(String.format("La fecha indicada para el registro no está dentro del período %s - %s",
+                            hourDetailStartDate.toString(), hourDetailEndDate.toString()));
         }
 
         timeRegister.setId(timeRegisterId);
