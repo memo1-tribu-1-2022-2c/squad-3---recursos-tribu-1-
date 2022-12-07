@@ -85,7 +85,7 @@ public class TimeRegisterController {
         Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(timeRegisterId);
 
         if (timeRegisterOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Time Register with id " + timeRegisterId + " does not exist");
+            return ResponseEntity.badRequest().body("No existe ningún registro con id " + timeRegisterId);
         }
 
         ResponseEntity<Object> isError = timeRegisterService.verifyTimeRegister(timeRegister);
@@ -96,7 +96,7 @@ public class TimeRegisterController {
         Long hourDetailId = timeRegister.getHourDetailId();
         Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
         if (hourDetail.isEmpty()) {
-            return ResponseEntity.badRequest().body("HourDetail with id " + hourDetailId + " does not exist");
+            return ResponseEntity.badRequest().body("No existe ningún parte de horas con id " + hourDetailId);
         }
 
         HourDetail existingHourDetail = hourDetail.get();

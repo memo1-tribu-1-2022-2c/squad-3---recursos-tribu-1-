@@ -52,7 +52,7 @@ public class TimeRegisterService {
             return ResponseEntity.badRequest().body("La actividad " + timeRegister.getTypeOfActivity().name() + "-" + timeRegister.getActivityId() + ", no existe");
         }
         List<TimeRegister> fromSameDate = timeRegisterRepository.findAllByDateAndHourDetailId(timeRegister.getDate(), timeRegister.getHourDetailId());
-        Double totalHours = fromSameDate.stream().filter(tr -> Objects.equals(tr.getId(), timeRegister.getId())).map(TimeRegister::getHours).reduce(Double::sum).orElse((double) 0);
+        Double totalHours = fromSameDate.stream().filter(tr -> !Objects.equals(tr.getId(), timeRegister.getId())).map(TimeRegister::getHours).reduce(Double::sum).orElse((double) 0);
         totalHours += timeRegister.getHours();
         if (totalHours > 24) {
             return ResponseEntity.badRequest().body("Los registros para el día " + timeRegister.getDate() + " no pueden superar el límite de 24 horas");
