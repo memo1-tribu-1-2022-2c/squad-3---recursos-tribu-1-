@@ -2,11 +2,9 @@ package ar.uba.fi.recursos.controller;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -20,10 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.TimeRegister;
-import ar.uba.fi.recursos.repository.TimeRegisterRepository;
-import ar.uba.fi.recursos.service.HourDetailService;
 import ar.uba.fi.recursos.service.TimeRegisterService;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
@@ -35,111 +30,26 @@ public class TimeRegisterController {
 
     @Autowired
     private TimeRegisterService timeRegisterService;
-    @Autowired
-    private HourDetailService hourDetailService;
-
-    @Autowired
-    private TimeRegisterRepository timeRegisterRepository;
 
     @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<TimeRegister> getAllTimeRegisters() {
-        return timeRegisterService.findAll();
+    public ResponseEntity<List<TimeRegister>> getAllTimeRegisters() {
+        return ResponseEntity.ok(timeRegisterService.findAll());
     }
 
     @PostMapping(path = "")
-    public ResponseEntity<Object> createTimeRegister(@RequestBody TimeRegister timeRegister) {
-        timeRegister.setId(null);
-        Long hourDetailId = timeRegister.getHourDetailId();
-        Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
-        if (hourDetail.isEmpty()) {
-            return ResponseEntity.badRequest().body("El parte de horas con id " + hourDetailId + " no existe");
-        }
-        ResponseEntity<Object> isError = timeRegisterService.verifyNewTimeRegister(timeRegister);
-
-        if (isError.getStatusCode() != HttpStatus.OK) {
-            return isError;
-        }
-
-        HourDetail existingHourDetail = hourDetail.get();
-
-        // chequear que la fecha del registro este dentro del periodo del parte asociado
-        LocalDate timeRegisterDate = timeRegister.getDate();
-        LocalDate hourDetailStartDate = existingHourDetail.getStartTime();
-        LocalDate hourDetailEndDate = existingHourDetail.getEndTime();
-
-        if (timeRegisterDate.isAfter(hourDetailEndDate) || timeRegisterDate.isBefore(hourDetailStartDate)) {
-            return ResponseEntity.badRequest()
-                    .body(String.format("La fecha indicada para el registro no está dentro del período %s - %s",
-                            hourDetailStartDate.toString(), hourDetailEndDate.toString()));
-        }
-
-        existingHourDetail.addTimeRegister(timeRegister);
-        hourDetailService.save(existingHourDetail);
-
-        return ResponseEntity.ok().build();
+    public ResponseEntity<TimeRegister> createTimeRegister(@RequestBody TimeRegister timeRegister) {
+        return ResponseEntity.ok(timeRegisterService.createTimeRegisterFrom(timeRegister));
     }
 
     @PutMapping(path = "/{timeRegisterId}")
-    public ResponseEntity<Object> modifyTimeRegisterData(@RequestBody TimeRegister timeRegister,
+    public ResponseEntity<TimeRegister> modifyTimeRegister(@RequestBody TimeRegister newTimeRegister,
             @PathVariable Long timeRegisterId) {
-        Optional<TimeRegister> timeRegisterOptional = timeRegisterRepository.findById(timeRegisterId);
-
-        if (timeRegisterOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("No existe ningún registro con id " + timeRegisterId);
-        }
-
-        ResponseEntity<Object> isError = timeRegisterService.verifyTimeRegister(timeRegister);
-        if (isError.getStatusCode() != HttpStatus.OK) {
-            return isError;
-        }
-
-        Long hourDetailId = timeRegister.getHourDetailId();
-        Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
-        if (hourDetail.isEmpty()) {
-            return ResponseEntity.badRequest().body("No existe ningún parte de horas con id " + hourDetailId);
-        }
-
-        HourDetail existingHourDetail = hourDetail.get();
-
-        // chequear que la fecha del registro este dentro del periodo del parte asociado
-        LocalDate timeRegisterDate = timeRegister.getDate();
-        LocalDate hourDetailStartDate = existingHourDetail.getStartTime();
-        LocalDate hourDetailEndDate = existingHourDetail.getEndTime();
-
-        if (timeRegisterDate.isAfter(hourDetailEndDate) || timeRegisterDate.isBefore(hourDetailStartDate)) {
-            return ResponseEntity.badRequest()
-                    .body(String.format("La fecha indicada para el registro no está dentro del período %s - %s",
-                            hourDetailStartDate.toString(), hourDetailEndDate.toString()));
-        }
-
-        timeRegister.setId(timeRegisterId);
-        return ResponseEntity.ok(timeRegisterRepository.save(timeRegister));
-
+        return ResponseEntity.ok(timeRegisterService.modifyTimeRegister(timeRegisterId, newTimeRegister));
     }
 
     @DeleteMapping(path = "/{timeRegisterId}")
-    public ResponseEntity<Object> deleteTimeRegister(@PathVariable Long timeRegisterId) {
-        Optional<TimeRegister> timeRegisterOptional = timeRegisterService.findById(timeRegisterId);
-
-        if (timeRegisterOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("El registro con id " + timeRegisterId + " no existe");
-        }
-
-        TimeRegister existingTimeRegister = timeRegisterOptional.get();
-
-        // hour detail deletes the time register
-        Long hourDetailId = existingTimeRegister.getHourDetailId();
-        Optional<HourDetail> hourDetailOptional = hourDetailService.findById(hourDetailId);
-
-        if (hourDetailOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("El parte de horas con id " + hourDetailId + " no existe");
-        }
-
-        HourDetail hourDetail = hourDetailOptional.get();
-        hourDetail.removeTimeRegister(existingTimeRegister);
-        hourDetailService.save(hourDetail);
+    public void deleteTimeRegister(@PathVariable Long timeRegisterId) {
         timeRegisterService.deleteById(timeRegisterId);
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping(path = "/report", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -3,6 +3,8 @@ package ar.uba.fi.recursos.exceptions;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
