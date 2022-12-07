@@ -48,18 +48,18 @@ public class ConceptService {
 
     public Concept findById(Long id) {
         return conceptRepository.findById(id).orElseThrow(() -> {
-            return new EntityNotFoundException("No existe un concepto con id: " + id);
+            throw new EntityNotFoundException("No existe ningún concepto con id: " + id);
         });
     }
 
-    public Concept modifyConcept(Long conceptId, Concept modifiedConcept) {
+    public Concept modifyConcept(Long conceptId, Concept newConcept) {
         Concept foundConcept = findById(conceptId);
 
-        if (!modifiedConcept.getName().equals(foundConcept.getName()) && existsByName(modifiedConcept.getName()))
-            throw new ExistingConceptNameException("Ya existe un concepto con el nombre: " + modifiedConcept.getName());
+        if (!newConcept.getName().equals(foundConcept.getName()) && existsByName(newConcept.getName()))
+            throw new ExistingConceptNameException("Ya existe un concepto con el nombre: " + newConcept.getName());
 
-        modifiedConcept.setId(conceptId);
-        return save(modifiedConcept);
+        newConcept.setId(conceptId);
+        return save(newConcept);
     }
 
     public Concept deleteConcept(Long conceptId) {

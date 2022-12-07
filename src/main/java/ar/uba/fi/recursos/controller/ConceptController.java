@@ -2,8 +2,6 @@ package ar.uba.fi.recursos.controller;
 
 import java.util.List;
 
-import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +37,7 @@ public class ConceptController {
     }
 
     @PostMapping(path = "")
-    public ResponseEntity<Concept> createConcept(@Valid @RequestBody Concept concept) {
+    public ResponseEntity<Concept> createConcept(@RequestBody Concept concept) {
         return ResponseEntity.ok(conceptService.createConcept(concept));
     }
 
@@ -49,8 +47,8 @@ public class ConceptController {
     }
 
     @PutMapping(path = "/{conceptId}")
-    public ResponseEntity<Concept> modifyConcept(@RequestBody Concept concept, @PathVariable Long conceptId) {
-        return ResponseEntity.ok(conceptService.modifyConcept(conceptId, concept));
+    public ResponseEntity<Concept> modifyConcept(@RequestBody Concept newConcept, @PathVariable Long conceptId) {
+        return ResponseEntity.ok(conceptService.modifyConcept(conceptId, newConcept));
     }
 
     @DeleteMapping(path = "/{conceptId}")
