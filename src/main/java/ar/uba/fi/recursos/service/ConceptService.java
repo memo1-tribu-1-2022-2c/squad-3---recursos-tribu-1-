@@ -67,4 +67,11 @@ public class ConceptService {
         foundConcept.setStatus(ConceptStatus.UNAVAILABLE);
         return save(foundConcept);
     }
+
+    public Concept findByIdAndStatus(Long id, ConceptStatus status) {
+        return conceptRepository.findByIdAndStatus(id, status).orElseThrow(() -> {
+            throw new EntityNotFoundException(
+                    String.format("No existe ningún concepto %s con id: %d", status.name(), id));
+        });
+    }
 }

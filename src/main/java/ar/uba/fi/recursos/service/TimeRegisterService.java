@@ -13,6 +13,7 @@ import ar.uba.fi.recursos.dtos.TaskData;
 import ar.uba.fi.recursos.exceptions.ExistingTimeRegisterException;
 import ar.uba.fi.recursos.exceptions.InvalidDateException;
 import ar.uba.fi.recursos.exceptions.InvalidHourDetailHoursException;
+import ar.uba.fi.recursos.model.ConceptStatus;
 import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
@@ -42,23 +43,37 @@ public class TimeRegisterService {
     public TimeRegister modifyTimeRegister(Long timeRegisterId, TimeRegister newTimeRegister) {
         HourDetail foundHourDetail = hourDetailService.findById(findById(timeRegisterId).getHourDetailId());
         checkTimeRegisterActivityIsValid(newTimeRegister);
+        chechTimeRegisterExistsForIdAndDateAndActivity(timeRegisterId, newTimeRegister);
         checkTimeRegisterHoursAreValid(newTimeRegister);
         checkTimeRegisterDateIsInsidePeriodOf(newTimeRegister, foundHourDetail);
         newTimeRegister.setId(timeRegisterId);
         return timeRegisterRepository.save(newTimeRegister);
     }
 
+    private void chechTimeRegisterExistsForIdAndDateAndActivity(Long timeRegisterId, TimeRegister newTimeRegister) {
+        timeRegisterRepository.findByIdAndDateAndActivityIdAndTypeOfActivity(
+                timeRegisterId, newTimeRegister.getDate(), newTimeRegister.getActivityId(),
+                newTimeRegister.getTypeOfActivity()).orElseThrow(() -> {
+                    throw new EntityNotFoundException(String.format(
+                            "No existe ningún registro con id %d, para el día %s y la actividad de tipo %s con id %d",
+                            timeRegisterId, newTimeRegister.getDate().toString(),
+                            newTimeRegister.getTypeOfActivity().name(), newTimeRegister.getActivityId()));
+                });
+    }
+
     private void checkTimeRegisterActivityIsValid(TimeRegister timeRegister) {
         switch (timeRegister.getTypeOfActivity()) {
             case TASK -> {
                 String url = String.format("%s/%d", TASKS_URL, timeRegister.getActivityId());
-                if (new RestTemplate().getForObject(url, TaskData.class) == null)
+                TaskData rawTask = new RestTemplate().getForObject(url, TaskData.class);
+                if (rawTask == null)
                     throw new EntityNotFoundException(
-                            String.format("La actividad %s - %d, no existe", timeRegister.getTypeOfActivity().name(),
+                            String.format("La actividad de tipo %s con id %d, no existe",
+                                    timeRegister.getTypeOfActivity().name(),
                                     timeRegister.getActivityId()));
             }
 
-            case CONCEPT -> conceptService.findById(timeRegister.getActivityId());
+            case CONCEPT -> conceptService.findByIdAndStatus(timeRegister.getActivityId(), ConceptStatus.AVAILABLE);
         }
     }
 

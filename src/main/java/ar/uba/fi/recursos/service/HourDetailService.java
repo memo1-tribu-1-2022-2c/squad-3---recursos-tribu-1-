@@ -7,22 +7,22 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import ar.uba.fi.recursos.exceptions.InvalidDateException;
-import ar.uba.fi.recursos.exceptions.InvalidTypeException;
-import ar.uba.fi.recursos.exceptions.OverlappingDatesException;
+import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import ar.uba.fi.recursos.dtos.TaskData;
+import ar.uba.fi.recursos.exceptions.InvalidDateException;
+import ar.uba.fi.recursos.exceptions.InvalidTypeException;
+import ar.uba.fi.recursos.exceptions.OverlappingDatesException;
 import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.HourDetailStatus;
 import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.model.TimeRegisterTypeOfActivity;
 import ar.uba.fi.recursos.repository.HourDetailRepository;
-
-import javax.persistence.EntityNotFoundException;
-import javax.transaction.Transactional;
 
 @Service
 public class HourDetailService {

@@ -2,6 +2,7 @@ package ar.uba.fi.recursos.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -26,4 +27,7 @@ public interface TimeRegisterRepository extends CrudRepository<TimeRegister, Lon
         List<TimeRegister> findByHourDetailId(Long workerId);
 
         List<TimeRegister> findAllByDateAndHourDetailId(LocalDate date, Long hourDetailId);
+
+        Optional<TimeRegister> findByIdAndDateAndActivityIdAndTypeOfActivity(Long id, LocalDate date, Long activityId,
+                        TimeRegisterTypeOfActivity typeOfActivity);
 }
