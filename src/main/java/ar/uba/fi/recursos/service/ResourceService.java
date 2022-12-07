@@ -2,6 +2,8 @@ package ar.uba.fi.recursos.service;
 
 import java.util.*;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -10,22 +12,19 @@ import ar.uba.fi.recursos.model.Resource;
 @Service
 public class ResourceService {
 
+    private final String RESOURCES_URL = "https://anypoint.mulesoft.com/mocking/api/v1/sources/exchange/assets/754f50e8-20d8-4223-bbdc-56d50131d0ae/recursos-psa/1.0.0/m/api/recursos";
+
     public List<Resource> getAllResources() {
+        Resource[] rawResources = new RestTemplate().getForObject(RESOURCES_URL, Resource[].class);
 
-        String url = "https://anypoint.mulesoft.com/mocking/api/v1/sources/exchange/assets/754f50e8-20d8-4223-bbdc-56d50131d0ae/recursos-psa/1.0.0/m/api/recursos";
-
-        RestTemplate restTemplate = new RestTemplate();
-        Resource[] resourcesRaw = restTemplate.getForObject(url, Resource[].class);
-
-        if (resourcesRaw == null) {
+        if (rawResources == null)
             return Collections.emptyList();
-        }
-
-        return Arrays.asList(resourcesRaw);
+        return Arrays.asList(rawResources);
     }
 
-    public Optional<Resource> findById(Long resourceId) {
-        List<Resource> resources = this.getAllResources();
-        return resources.stream().filter(r -> r.getId().equals(resourceId)).findAny();
+    public Resource findById(Long resourceId) {
+        return getAllResources().stream().filter(r -> r.getId().equals(resourceId)).findFirst().orElseThrow(() -> {
+            throw new EntityNotFoundException("No existe ningún recurso con id: " + resourceId);
+        });
     }
 }

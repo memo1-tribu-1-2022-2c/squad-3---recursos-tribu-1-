@@ -31,6 +31,6 @@ public class ResourceController {
 
     @GetMapping(path = "/{resourceId}")
     public ResponseEntity<Resource> getResource(@PathVariable Long resourceId) {
-        return ResponseEntity.of(resourceService.findById(resourceId));
+        return ResponseEntity.ok(resourceService.findById(resourceId));
     }
 }
