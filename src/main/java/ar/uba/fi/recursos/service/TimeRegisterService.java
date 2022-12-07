@@ -1,5 +1,14 @@
 package ar.uba.fi.recursos.service;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import javax.persistence.EntityNotFoundException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import ar.uba.fi.recursos.dtos.TaskData;
 import ar.uba.fi.recursos.exceptions.ExistingTimeRegisterException;
 import ar.uba.fi.recursos.exceptions.InvalidDateException;
@@ -7,14 +16,6 @@ import ar.uba.fi.recursos.exceptions.InvalidHourDetailHoursException;
 import ar.uba.fi.recursos.model.HourDetail;
 import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.persistence.EntityNotFoundException;
 
 @Service
 public class TimeRegisterService {
