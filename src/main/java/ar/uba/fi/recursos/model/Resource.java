@@ -23,9 +23,9 @@ public class Resource {
     @JsonAlias("legajo")
     private Long id;
 
-    @JsonAlias("nombre")
+    @JsonAlias("Nombre")
     private String name;
 
-    @JsonAlias("apellido")
+    @JsonAlias("Apellido")
     private String surname;
 }

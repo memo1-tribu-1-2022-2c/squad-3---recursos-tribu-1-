@@ -41,7 +41,6 @@ public class TimeRegisterService {
     public TimeRegister modifyTimeRegister(Long timeRegisterId, TimeRegister newTimeRegister) {
         HourDetail foundHourDetail = hourDetailService.findById(findById(timeRegisterId).getHourDetailId());
         checkTimeRegisterActivityIsValid(newTimeRegister);
-        checkTimeRegisterDoesNotAlreadyExist(newTimeRegister);
         checkTimeRegisterHoursAreValid(newTimeRegister);
         checkTimeRegisterDateIsInsidePeriodOf(newTimeRegister, foundHourDetail);
         newTimeRegister.setId(timeRegisterId);

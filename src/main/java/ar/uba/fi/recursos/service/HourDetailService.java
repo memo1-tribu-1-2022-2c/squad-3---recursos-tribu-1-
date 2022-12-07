@@ -137,9 +137,10 @@ public class HourDetailService {
 
     public HourDetail modifyHourDetail(Long hourDetailId, HourDetail newHourDetail) {
         findById(hourDetailId);
+        resourceService.findById(newHourDetail.getWorkerId());
         checkValidPeriodOf(newHourDetail);
         checkOverlappingPeriodOf(newHourDetail);
-        resourceService.findById(newHourDetail.getWorkerId());
+        newHourDetail.setId(hourDetailId);
         return hourDetailRepository.save(newHourDetail);
     }
 }
