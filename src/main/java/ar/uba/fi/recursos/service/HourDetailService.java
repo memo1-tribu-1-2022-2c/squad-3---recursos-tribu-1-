@@ -136,11 +136,14 @@ public class HourDetailService {
     }
 
     public HourDetail modifyHourDetail(Long hourDetailId, HourDetail newHourDetail) {
-        findById(hourDetailId);
+        HourDetail foundHourDetail = findById(hourDetailId);
         resourceService.findById(newHourDetail.getWorkerId());
         checkValidPeriodOf(newHourDetail);
         checkOverlappingPeriodOf(newHourDetail);
-        newHourDetail.setId(hourDetailId);
-        return hourDetailRepository.save(newHourDetail);
+        foundHourDetail.setStartTime(newHourDetail.getStartTime());
+        foundHourDetail.setEndTime(newHourDetail.getEndTime());
+        foundHourDetail.setType(newHourDetail.getType());
+        foundHourDetail.setStatus(newHourDetail.getStatus());
+        return hourDetailRepository.save(foundHourDetail);
     }
 }
