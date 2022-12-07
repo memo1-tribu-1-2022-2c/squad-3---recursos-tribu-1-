@@ -1,12 +1,9 @@
 package ar.uba.fi.recursos.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import ar.uba.fi.recursos.model.TimeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -35,40 +32,30 @@ public class HourDetailController {
 
     @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<HourDetail>> getAllHourDetails(@RequestParam(required = false) Long workerId) {
-        if (workerId != null)
-            return ResponseEntity.ok(hourDetailService.findByWorkerId(workerId));
-        return ResponseEntity.ok(hourDetailService.findAll());
+        if (workerId == null)
+            return ResponseEntity.ok(hourDetailService.findAll());
+        return ResponseEntity.ok(hourDetailService.findByWorkerId(workerId));
     }
 
     @PostMapping(path = "")
-    public ResponseEntity<Object> createHourDetail(@RequestBody HourDetail hourDetail){
-        return hourDetailService.createHourDetail(hourDetail);
+    public ResponseEntity<HourDetail> createHourDetail(@RequestBody HourDetail hourDetail) {
+        return ResponseEntity.ok(hourDetailService.createHourDetailFrom(hourDetail));
     }
 
     @GetMapping(path = "/{hourDetailId}")
     public ResponseEntity<HourDetail> getHourDetail(@PathVariable Long hourDetailId) {
-        return ResponseEntity.of(hourDetailService.findById(hourDetailId));
+        return ResponseEntity.ok(hourDetailService.findById(hourDetailId));
     }
 
     @GetMapping(path = "/{hourDetailId}/timeRegisters")
     public ResponseEntity<List<TimeRegister>> getTimeRegistersFromHourDetail(@PathVariable Long hourDetailId) {
-        return ResponseEntity.of(hourDetailService.findTimeRegisters(hourDetailId));
+        return ResponseEntity.ok(hourDetailService.findTimeRegistersFrom(hourDetailId));
     }
 
     @PutMapping(path = "/{hourDetailId}")
-    public ResponseEntity<Object> modifyHourDetail(@RequestBody HourDetail hourDetail,
+    public ResponseEntity<HourDetail> modifyHourDetail(@RequestBody HourDetail newHourDetail,
             @PathVariable Long hourDetailId) {
-        Optional<HourDetail> hourDetailOptional = hourDetailService.findById(hourDetailId);
-
-        if (hourDetailOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        ResponseEntity<Object> response = hourDetailService.checkValidPeriod(hourDetail);
-        if (response.getStatusCode() != HttpStatus.OK) {
-            return response;
-        }
-        return ResponseEntity.ok(hourDetail);
+        return ResponseEntity.ok(hourDetailService.modifyHourDetail(hourDetailId, newHourDetail));
     }
 
     @DeleteMapping(path = "/{hourDetailId}")

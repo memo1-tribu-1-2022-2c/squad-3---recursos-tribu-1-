@@ -3,15 +3,14 @@ package ar.uba.fi.recursos.service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
+import ar.uba.fi.recursos.exceptions.InvalidDateException;
+import ar.uba.fi.recursos.exceptions.InvalidTypeException;
 import ar.uba.fi.recursos.exceptions.OverlappingDatesException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,6 +21,7 @@ import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.model.TimeRegisterTypeOfActivity;
 import ar.uba.fi.recursos.repository.HourDetailRepository;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
 @Service
@@ -31,80 +31,58 @@ public class HourDetailService {
     private HourDetailRepository hourDetailRepository;
     @Autowired
     private ResourceService resourceService;
+    private final String PROYECTS_URL = "https://squad2-2022-2c.herokuapp.com/api/v1/projects";
 
-
-    public ResponseEntity<Object> createHourDetail(HourDetail hourDetail){
-        ResponseEntity<Object> response = checkValidPeriod(hourDetail);
-        if(response.getStatusCode() != HttpStatus.OK ){
-            return response;
-        }
-        
-        if(!resourceService.findById(hourDetail.getWorkerId()).isPresent()) {
-            return ResponseEntity.badRequest().body("El id de empleado ingresado no existe");
-        }
-        
+    public HourDetail createHourDetailFrom(HourDetail hourDetail) {
+        checkValidPeriodOf(hourDetail);
+        checkOverlappingPeriodOf(hourDetail);
+        resourceService.findById(hourDetail.getWorkerId());
         hourDetail.setStatus(HourDetailStatus.DRAFT);
-        hourDetail.setTimeRegisters(new ArrayList<>());
-        hourDetailRepository.save(hourDetail);
-        return ResponseEntity.ok().build();
+        hourDetail.setTimeRegisters(Collections.emptyList());
+        return hourDetailRepository.save(hourDetail);
     }
 
-    public ResponseEntity<Object> checkValidPeriod(HourDetail hourDetail) {
+    public void checkValidPeriodOf(HourDetail hourDetail) {
         LocalDate startDate = hourDetail.getStartTime();
 
         switch (hourDetail.getType()) {
             case WEEKLY -> {
-                if (startDate.getDayOfWeek() != DayOfWeek.MONDAY) {
-                    return ResponseEntity.badRequest().body("La fecha especificada no es un lunes: " + startDate);
-                }
+                if (startDate.getDayOfWeek() != DayOfWeek.MONDAY)
+                    throw new InvalidDateException("La fecha especificada no es un lunes: " + startDate);
                 hourDetail.setEndTime(startDate.plusDays(6));
             }
 
             case BIWEEKLY -> {
-                if (startDate.getDayOfMonth() == 1) {
+                if (startDate.getDayOfMonth() == 1)
                     hourDetail.setEndTime(startDate.plusDays(14));
-                } else if (startDate.getDayOfMonth() == 16) {
+                else if (startDate.getDayOfMonth() == 16)
                     hourDetail.setEndTime(YearMonth.from(startDate).atEndOfMonth());
-                } else {
-                    return ResponseEntity.badRequest().body("La fecha especificada no es un 1 o 16 del mes: " + startDate);
-                }
+                else
+                    throw new InvalidDateException("La fecha especificada no es un 1 o 16 del mes: " + startDate);
             }
+
             case MONTHLY -> {
-                if (startDate.getDayOfMonth() != 1) {
-                    return ResponseEntity.badRequest().body("La fecha especificada no es el primer día del mes: " + startDate);
-                }
+                if (startDate.getDayOfMonth() != 1)
+                    throw new InvalidDateException("La fecha especificada no es el primer día del mes: " + startDate);
                 hourDetail.setEndTime(YearMonth.from(startDate).atEndOfMonth());
             }
 
-            default -> {
-                return ResponseEntity.badRequest().body("El tipo especificado es inválido: " + hourDetail.getType());
-            }
+            default -> throw new InvalidTypeException("El tipo especificado es inválido: " + hourDetail.getType());
         }
-
-        // Check if there is an overlapping hour detail
-        try {
-            checkOverlapping(hourDetail);
-        } catch (OverlappingDatesException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-
-        return ResponseEntity.ok().build();
     }
 
-
     @Transactional
-    protected void checkOverlapping(HourDetail hourDetail) {
-        List<String> overlapping = this.hourDetailRepository.findAllWithOverlappingDates(
-                hourDetail.getWorkerId(), hourDetail.getStartTime(), hourDetail.getEndTime()
-        ).stream().map(hd -> hd.getId().toString()).toList();
+    protected void checkOverlappingPeriodOf(HourDetail hourDetail) {
+        List<String> overlapping = hourDetailRepository.findAllWithOverlappingDates(
+                hourDetail.getWorkerId(), hourDetail.getStartTime(), hourDetail.getEndTime()).stream()
+                .map(hd -> hd.getId().toString()).toList();
 
         if (!overlapping.isEmpty()) {
             String message = "Las horas se solapan con ";
-            if (overlapping.size() > 1) {
+            if (overlapping.size() > 1)
                 message += "los partes: ";
-            } else {
+            else
                 message += "el parte: ";
-            }
             throw new OverlappingDatesException(message + String.join(", ", overlapping));
         }
     }
@@ -114,23 +92,20 @@ public class HourDetailService {
     }
 
     public Double getTotalProjectHours(Long projectId) {
-        String url = "https://squad2-2022-2c.herokuapp.com/api/v1/projects/" + projectId + "/tasks";
-        RestTemplate restTemplate = new RestTemplate();
+        String url = String.format("%s/%d/tasks", PROYECTS_URL, projectId);
 
-        TaskData[] tasks_raw = restTemplate.getForObject(url, TaskData[].class);
-        if (tasks_raw == null) {
+        TaskData[] rawTasks = new RestTemplate().getForObject(url, TaskData[].class);
+        if (rawTasks == null)
             return 0D;
-        }
 
-        List<Long> tasks = Arrays.asList(tasks_raw).stream().map(task -> task.getId()).toList();
+        List<Long> tasks = Arrays.asList(rawTasks).stream().map(task -> task.getId()).toList();
 
         Double totalHours = 0D;
         for (HourDetail hd : this.hourDetailRepository.findAll()) {
             for (TimeRegister tr : hd.getTimeRegisters()) {
                 if (tr.getTypeOfActivity() == TimeRegisterTypeOfActivity.TASK) {
-                    if (tasks.contains(tr.getActivityId())) {
+                    if (tasks.contains(tr.getActivityId()))
                         totalHours += tr.getHours();
-                    }
                 }
             }
         }
@@ -138,8 +113,10 @@ public class HourDetailService {
         return totalHours;
     }
 
-    public Optional<HourDetail> findById(Long id) {
-        return hourDetailRepository.findById(id);
+    public HourDetail findById(Long id) {
+        return hourDetailRepository.findById(id).orElseThrow(() -> {
+            throw new EntityNotFoundException("No existe ningún parte de horas con id: " + id);
+        });
     }
 
     public List<HourDetail> findByWorkerId(Long workerId) {
@@ -154,7 +131,15 @@ public class HourDetailService {
         hourDetailRepository.deleteById(id);
     }
 
-    public Optional<List<TimeRegister>> findTimeRegisters(Long hourDetailId) {
-        return hourDetailRepository.findById(hourDetailId).map(HourDetail::getTimeRegisters);
+    public List<TimeRegister> findTimeRegistersFrom(Long hourDetailId) {
+        return findById(hourDetailId).getTimeRegisters();
+    }
+
+    public HourDetail modifyHourDetail(Long hourDetailId, HourDetail newHourDetail) {
+        findById(hourDetailId);
+        checkValidPeriodOf(newHourDetail);
+        checkOverlappingPeriodOf(newHourDetail);
+        resourceService.findById(newHourDetail.getWorkerId());
+        return hourDetailRepository.save(newHourDetail);
     }
 }
