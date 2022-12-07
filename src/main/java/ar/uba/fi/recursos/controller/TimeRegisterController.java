@@ -48,6 +48,7 @@ public class TimeRegisterController {
 
     @PostMapping(path = "")
     public ResponseEntity<Object> createTimeRegister(@RequestBody TimeRegister timeRegister) {
+        timeRegister.setId(null);
         Long hourDetailId = timeRegister.getHourDetailId();
         Optional<HourDetail> hourDetail = hourDetailService.findById(hourDetailId);
         if (hourDetail.isEmpty()) {

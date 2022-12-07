@@ -1,24 +1,19 @@
 package ar.uba.fi.recursos.service;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import ar.uba.fi.recursos.dtos.TaskData;
-import ar.uba.fi.recursos.exceptions.InvalidHourDetailHoursException;
 import ar.uba.fi.recursos.model.TimeRegister;
 import ar.uba.fi.recursos.model.TimeRegisterTypeOfActivity;
 import ar.uba.fi.recursos.repository.ConceptRepository;
 import ar.uba.fi.recursos.repository.TimeRegisterRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 
 @Service
@@ -26,7 +21,7 @@ public class TimeRegisterService {
 
     @Autowired
     private TimeRegisterRepository timeRegisterRepository;
-    @Autowired 
+    @Autowired
     private ConceptRepository conceptRepository;
 
     public boolean verifyActivity(Long activityId, TimeRegisterTypeOfActivity typeOfActivity) {
@@ -36,7 +31,7 @@ public class TimeRegisterService {
             TaskData task_raw = restTemplate.getForObject(url, TaskData.class);
             return task_raw != null;
 
-        } else if(typeOfActivity == TimeRegisterTypeOfActivity.CONCEPT){
+        } else if (typeOfActivity == TimeRegisterTypeOfActivity.CONCEPT) {
             return conceptRepository.findById(activityId).isPresent();
         }
         return false;
@@ -48,12 +43,19 @@ public class TimeRegisterService {
         }
         return verifyTimeRegister(timeRegister);
     }
+
     public ResponseEntity<Object> verifyTimeRegister(TimeRegister timeRegister) {
         if (timeRegister.getHours() <= 0 || timeRegister.getHours() > 24) {
             return ResponseEntity.badRequest().body("Las horas del parte no pueden ser negativas o mayores a 24: " + timeRegister.getHours());
         }
         if (!verifyActivity(timeRegister.getActivityId(), timeRegister.getTypeOfActivity())) {
-            return ResponseEntity.badRequest().body("Activity is not valid for this hour detail");
+            return ResponseEntity.badRequest().body("La actividad " + timeRegister.getTypeOfActivity().name() + "-" + timeRegister.getActivityId() + ", no existe");
+        }
+        List<TimeRegister> fromSameDate = timeRegisterRepository.findAllByDateAndHourDetailId(timeRegister.getDate(), timeRegister.getHourDetailId());
+        Double totalHours = fromSameDate.stream().filter(tr -> Objects.equals(tr.getId(), timeRegister.getId())).map(TimeRegister::getHours).reduce(Double::sum).orElse((double) 0);
+        totalHours += timeRegister.getHours();
+        if (totalHours > 24) {
+            return ResponseEntity.badRequest().body("Los registros para el día " + timeRegister.getDate() + " no pueden superar el límite de 24 horas");
         }
         return ResponseEntity.ok().build();
     }
@@ -71,7 +73,7 @@ public class TimeRegisterService {
     }
 
     public List<TimeRegister> findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(LocalDate minDate,
-            LocalDate maxDate, Long workerId) {
+                                                                                                 LocalDate maxDate, Long workerId) {
         return timeRegisterRepository.findTimeRegistersByDateBetweenAndHourDetail_WorkerIdOrderByDateAsc(minDate,
                 maxDate, workerId);
     }
