@@ -73,17 +73,20 @@ public class HourDetailService {
 
     @Transactional
     protected void checkOverlappingPeriodOf(HourDetail hourDetail) {
-        List<String> overlapping = hourDetailRepository.findAllWithOverlappingDates(
+        List<Long> overlapping = hourDetailRepository.findAllWithOverlappingDates(
                 hourDetail.getWorkerId(), hourDetail.getStartTime(), hourDetail.getEndTime()).stream()
-                .map(hd -> hd.getId().toString()).toList();
+                .map(hd -> hd.getId()).toList();
 
         if (!overlapping.isEmpty()) {
             String message = "Las horas se solapan con ";
             if (overlapping.size() > 1)
                 message += "los partes: ";
+            else if (overlapping.stream().anyMatch(id -> id.equals(hourDetail.getId())))
+                return;
             else
                 message += "el parte: ";
-            throw new OverlappingDatesException(message + String.join(", ", overlapping));
+            throw new OverlappingDatesException(
+                    message + String.join(", ", overlapping.stream().map(o -> o.toString()).toList()));
         }
     }
 
